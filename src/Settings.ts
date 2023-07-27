@@ -15,7 +15,7 @@ export class Settings implements SettingsI{
         game.settings.register(NAMESPACE, this.ACTOR_FILTER, {
             name: game.i18n.localize('beaversGamepad.settings.actorFilter.name'),
             hint: game.i18n.localize('beaversGamepad.settings.actorFilter.hint'),
-            scope: "world",
+            scope: "client",
             config: true,
             default: "character"
         });
@@ -34,7 +34,7 @@ export class Settings implements SettingsI{
             hint: game.i18n.localize('beaversGamepad.settings.gamepadConfig.hint'),
             //@ts-ignore
             type: GamepadConfigApp,
-            restricted: true
+            restricted: false,
         });
 
     }
