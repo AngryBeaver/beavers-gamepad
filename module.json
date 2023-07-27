@@ -1,0 +1,49 @@
+{
+    "title": "Beaver's Gamepad",
+    "description": "For controlling actors while playing locally on a central map monitor",
+    "id": "beavers-gamepad",
+    "version": "1.0.0",
+    "authors": [
+      {
+        "name": "angryBeaver",
+        "url": "https://github.com/angrybeaver"
+      }
+    ],
+    "languages": [
+      {
+        "lang": "en",
+        "name": "English",
+        "path": "lang/en.json"
+      }
+    ],
+    "esmodules": [
+      "src/main.js"
+    ],
+    "styles": [
+
+    ],
+    "packs": [
+    ],
+    "url": "https://github.com/AngryBeaver/beavers-gamepad",
+    "manifest": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/module.json",
+    "download": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/beavers-gamepad.zip",
+    "relationships": {
+      "systems": [
+      ],
+      "requires": [
+        {
+          "id": "beavers-system-interface",
+          "type": "module",
+          "manifest": "https://github.com/AngryBeaver/beavers-system-interface/releases/latest/download/module.json",
+          "compatibility": {
+            "minimum" : "2.1.2",
+            "verified": "2.1.2"
+          }
+        }
+      ]
+    },
+    "compatibility": {
+      "minimum": "10",
+      "verified": "11"
+    }
+  }

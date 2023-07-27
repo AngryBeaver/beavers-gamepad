@@ -1,0 +1,20 @@
+{
+  "beaversGamepad": {
+    "settings": {
+      "gamepadConfig":{
+        "name": "Gamepad Configuration",
+        "hint": "Configure the gamepads",
+        "label": "\uD83C\uDFAE configure"
+      },
+      "actorFilter":{
+        "name": "Actor Filter Type",
+        "hint": "the filter type to select an actor for a gamepad"
+      }
+    },
+    "gamepadConfigApp": {
+      "title": "GamepadConfig",
+      "noGamepad": "No connected gamepads detected." ,
+      "info": "press a button on a gamepad to connect it"
+    }
+  }
+}

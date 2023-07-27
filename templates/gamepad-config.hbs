@@ -1,0 +1,41 @@
+<form autocomplete="off">
+    <div class="flexcol">
+        {{#unless this.hasGamepadConfigs}}
+            <p>⚠️{{localize "beaversGamepad.gamepadConfigApp.noGamepad"}}</p>
+        {{/unless}}
+        <p>{{localize "beaversGamepad.gamepadConfigApp.info"}}</p>
+    </div>
+    {{#each gamepadConfigs}}
+        <h2>{{this.gamepadId}}-{{@key}}</h2>
+        <div class="flexcol">
+            <div class="flexrow">
+            actor: &nbsp;
+            <beavers-selection>
+                <select name="{{@key}}.actorId">
+                    {{#select this.actorId}}
+                        <option selected disabled value=""></option>
+                        {{#each ../actors}}
+                            <option value="{{this.uuid}}" img="{{this.img}}">
+                                {{this.name}}
+                            </option>
+                        {{/each}}
+                    {{/select}}
+                </select>
+            </beavers-selection>
+            </div>
+            {{#each this.modules}}
+                <h3>{{this.name}}</h3>
+                {{#each this.binding.axes}}
+                    <div class="flexrow">
+                        {{@key}}
+                        <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.index" value="{{this.index}}"/>
+                        reversed:
+                        <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.reversed"
+                               type="checkbox" {{#if this.reversed}}checked{{/if}}/>
+                    </div>
+                {{/each}}
+            {{/each}}
+            <button data-id="{{@key}}" class="addGameHandlerSetting">add</button>
+        </div>
+    {{/each}}
+</form>
