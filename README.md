@@ -8,7 +8,7 @@ This module is intended to be used in local sessions with one Map Monitor and mu
 Each gamepad can be assigned to an actor.
 
 You can add GamepadModules to a gamepad and configure them. 
-Initially at least on GamepadModule is avaialable "Beaver's Token movement" which allows to move the actors token around.
+Initially at least one GamepadModule is available "Beaver's Token movement" which allows to move the actors token around.
 
 ## Addon
 You can write Addons a.k.a GamepadModules. There will be soon a section on how to do this.
