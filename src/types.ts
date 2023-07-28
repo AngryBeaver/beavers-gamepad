@@ -79,6 +79,7 @@ interface GamepadConfigManagerI {
     }
     updateGamepadEventHandler:()=>void
     updateGamepadConfigs:(data:{[key:string]:any})=>Promise<any>
+    deleteGamepadConfigModule:(gamepadIndex:string,moduleId:string)=>Promise<any>
 }
 
 type GamepadTickEventHandle = (tickEvent: GamepadTickEvent) => boolean;

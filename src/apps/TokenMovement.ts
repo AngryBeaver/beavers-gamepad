@@ -1,7 +1,7 @@
 export class TokenMovement implements GamepadModuleI{
 
-    private X_AXES = "X-Axes";
-    private Y_AXES = "Y-Axes";
+    private X_AXES = "Move-horizontal";
+    private Y_AXES = "Move-vertical";
     private NAME = "Beaver's Token Movement";
     private CONSTRUCTOR_PATH = "game.beavers-gamepad.TokenMovement";
 
@@ -28,11 +28,11 @@ export class TokenMovement implements GamepadModuleI{
         return {
             binding: {
                 axes: {
-                    "X-Axes": {
+                    "Move-horizontal": {
                         index: "0",
                         reversed: false
                     },
-                    "Y-Axes": {
+                    "Move-vertical": {
                         index: "1",
                         reversed: false
                     },
@@ -49,8 +49,8 @@ export class TokenMovement implements GamepadModuleI{
             let x = 0;
             let y = 0;
             for(const [i,value] of Object.entries(event.axes)){
-                x = this._get(this.X_AXES,i,value);
-                y = this._get(this.Y_AXES,i,value);
+                x = x || this._get(this.X_AXES,i,value);
+                y = y || this._get(this.Y_AXES,i,value);
             }
             this._move(x,y)
         }
@@ -60,7 +60,7 @@ export class TokenMovement implements GamepadModuleI{
     private _get(type:string,i:string,value:number){
         let result = 0;
         const {index,reversed} = this.config.binding.axes[type];
-        if(i === index) {
+        if(i === index.toString()) {
             if(reversed){
                 result = value*-1;
             }else {

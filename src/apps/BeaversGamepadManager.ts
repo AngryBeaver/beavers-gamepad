@@ -108,19 +108,26 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
         const data = this.gamepads[gamepad.index];
         for (const [index, axis] of gamepad.axes.entries()) {
             const value = axis * 10;
-            if (value < -2 || value > 2) {
-                data.axes[index] = data.axes[index] + value || value
+            if (value < -5) {
+                if(data.axes[index]>0){
+                    data.axes[index]=0
+                }
+                if(data.axes[index]!=-1){
+                    gamepadTickEvent.hasAnyAxesTicked = true;
+                    gamepadTickEvent.axes[index] = -1
+                }
+                data.axes[index] = data.axes[index]-1;
+            }else if (value > 5){
+                if(data.axes[index]<0){
+                    data.axes[index]=0
+                }
+                if(data.axes[index]!=1){
+                    gamepadTickEvent.hasAnyAxesTicked = true;
+                    gamepadTickEvent.axes[index] = 1
+                }
+                data.axes[index] = data.axes[index]+1;
             } else {
-                data.axes[index] = 0;
-            }
-            if (data.axes[index] >= 10) {
-                data.axes[index] = 0;
-                gamepadTickEvent.hasAnyAxesTicked=true;
-                gamepadTickEvent.axes[index] = 1
-            }else if(data.axes[index] <= -10){
-                data.axes[index] = 0;
-                gamepadTickEvent.hasAnyAxesTicked=true;
-                gamepadTickEvent.axes[index] = -1
+                data.axes[index]= 0;
             }
         }
     }

@@ -71,6 +71,14 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
         return this.context.Settings.setGamepadConfigs(gamepadConfigs);
     }
 
+    deleteGamepadConfigModule(gamepadIndex:string,moduleId:string):Promise<any>{
+        const gamepadConfigs = this.context.Settings.getGamepadConfigs();
+        if(gamepadConfigs[gamepadIndex]?.modules[moduleId]){
+            delete gamepadConfigs[gamepadIndex].modules[moduleId]
+        }
+        return this.context.Settings.setGamepadConfigs(gamepadConfigs);
+    }
+
     private _getGamepadModule(actorId:string, constructorPath:string):GamepadModuleI{
         const parts = constructorPath.split(".");
         let constructor = window;

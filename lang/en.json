@@ -14,7 +14,10 @@
     "gamepadConfigApp": {
       "title": "GamepadConfig",
       "noGamepad": "No connected gamepads detected." ,
-      "info": "press a button on a gamepad to connect it"
+      "info": "Press a button on a gamepad to connect it",
+      "actorLabel": "Actor:",
+      "reversedLabel": "Reversed:",
+      "addModule": "add gamepad module"
     }
   }
 }

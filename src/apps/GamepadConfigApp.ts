@@ -63,8 +63,14 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         super.activateListeners(html)
         html.find('.addGameHandlerSetting').on("click",e=>{
             const id = $(e.currentTarget).data("id");
-            this.addGameHandlerSetting(id);
+            this.addGamepadModule(id);
         });
+        html.find('.close').on("click",e=>{
+            const id = $(e.currentTarget).data("id");
+            const moduleId = $(e.currentTarget).data("module");
+            this.context.GamepadConfigManager.deleteGamepadConfigModule(id,moduleId).then(()=>this.render());
+        });
+
     }
 
     protected _updateObject(event: Event, formData: object | undefined): Promise<unknown> {
@@ -75,7 +81,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         return Promise.resolve("");
     }
 
-    async addGameHandlerSetting(gamepadIndex:string){
+    async addGamepadModule(gamepadIndex:string){
         const selectData = {
             choices:{}
         }
@@ -89,8 +95,5 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         data[gamepadIndex+'.modules.'+key] = this.handlerConfigs[key];
         this.context.GamepadConfigManager.updateGamepadConfigs(data).then(()=>this.render());
     }
-
-
-
 
 }
