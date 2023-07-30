@@ -73,7 +73,7 @@ export class TokenMovement implements GamepadModuleI{
 
     private _getToken():Token {
         // @ts-ignore
-        const token:Token = canvas.tokens?.objects?.children.find(token => this.actorId.endsWith(token?.actor.id) );
+        const token:Token = canvas.tokens?.objects?.children.find(token => this.actorId.endsWith(token?.actor?.uuid) );
         if(token.id !== this.token?.id) {
             this.position = undefined;
         }

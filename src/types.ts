@@ -60,7 +60,6 @@ interface Context {
 }
 
 interface GamepadConfigAppI{
-    updateController:()=>void,
 }
 
 interface SettingsI {

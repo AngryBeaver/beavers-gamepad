@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 
 export class GamepadConfigApp extends FormApplication<any,any,any> implements GamepadConfigAppI {
 
@@ -7,12 +7,16 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         [key:string]:GamepadModuleConfig
     }
     context: Context;
-    gamepadConfigs: GamepadConfigs
+    gamepadConfigs: GamepadConfigs;
+    hook:number;
 
     constructor(){
         super();
         this.context = game[NAMESPACE];
         this.context.GamepadConfigApp = this;
+        this.hook = Hooks.on(HOOK_GAMEPAD_CONNECTED, async function(){
+            this.render();
+        }.bind(this));
     }
 
     static get defaultOptions(): any {
@@ -32,16 +36,6 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
             closeOnSubmit:false,
             classes:  ["beavers-gamepad","gamepad-config"]
         })
-    }
-
-    updateController(){
-        this.render()
-    }
-
-    close(options?: FormApplication.CloseOptions): Promise<void>{
-        const result = super.close(options);
-        this.context.GamepadConfigManager.updateGamepadEventHandler();
-        return result
     }
 
     async getData(options: any): Promise<any> {
@@ -95,5 +89,14 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         data[gamepadIndex+'.modules.'+key] = this.handlerConfigs[key];
         this.context.GamepadConfigManager.updateGamepadConfigs(data).then(()=>this.render());
     }
+
+
+    close(options?: FormApplication.CloseOptions): Promise<void>{
+        const result = super.close(options);
+        this.context.GamepadConfigManager.updateGamepadEventHandler();
+        Hooks.off(HOOK_GAMEPAD_CONNECTED,this.hook);
+        return result
+    }
+
 
 }

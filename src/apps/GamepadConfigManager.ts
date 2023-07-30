@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, HOOK_READY, NAMESPACE} from "../main.js";
 
 export class GamepadConfigManager implements GamepadConfigManagerI{
 
@@ -14,6 +14,9 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
 
     constructor() {
         this.context = game[NAMESPACE];
+        Hooks.on(HOOK_GAMEPAD_CONNECTED, async function(){
+            this.updateGamepadEventHandler();
+        }.bind(this));
     }
 
 
@@ -68,7 +71,7 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
         for(const [attribute,value] of Object.entries(data)){
             beaversSystemInterface.objectAttributeSet(gamepadConfigs,attribute,value);
         }
-        return this.context.Settings.setGamepadConfigs(gamepadConfigs);
+        return this.context.Settings.setGamepadConfigs(gamepadConfigs)
     }
 
     deleteGamepadConfigModule(gamepadIndex:string,moduleId:string):Promise<any>{

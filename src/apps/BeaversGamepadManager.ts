@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 
 export class BeaversGamepadManager implements BeaversGamepadManagerI{
     gamepads: {
@@ -64,8 +64,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     private _registerGamePad(gamepad: Gamepad) {
         console.log("GamePad registered");
         this.gamepads[gamepad.index] = {button: {}, axes: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
-        this.context.GamepadConfigManager.updateGamepadEventHandler()
-        this.context.GamepadConfigApp?.updateController();
+        Hooks.call(HOOK_GAMEPAD_CONNECTED);
     }
 
     private async _gamepadTick() {
