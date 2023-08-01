@@ -34,7 +34,7 @@
                 <div class="flexcol" style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
                     <div style="font-weight:800;margin-bottom:20px" class="flexrow">
                         <div>{{this.name}}</div>
-                        <a class="close" style="flex:0" data-id="{{@../key}}" data-module="{{@key}}">
+                        <a class="delete" style="flex:0" data-id="{{@../key}}" data-module="{{@key}}">
                             <i class="fas fa-trash"></i>
                         </a>
                     </div>
@@ -50,7 +50,7 @@
                     {{/each}}
                 </div>
             {{/each}}
-            <button data-id="{{@key}}" class="addGameHandlerSetting">{{localize "beaversGamepad.gamepadConfigApp.addModule"}}</button>
+            <button data-id="{{@key}}" class="addGamepadModule">{{localize "beaversGamepad.gamepadConfigApp.addModule"}}</button>
         </div>
     {{/each}}
 </form>

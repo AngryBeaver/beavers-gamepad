@@ -1,19 +1,22 @@
-import {NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, HOOK_GAMEPAD_TICKED, HOOK_READY, NAMESPACE} from "../main.js";
 
 export class GamepadConfigManager implements GamepadConfigManagerI{
 
     context:Context;
-    registeredGamepadEventHandler:{
-        [key:string]:string[]
+    registeredGamepadModuleInstance:{
+        [gamepadIndex:string]:{
+            [moduleId:string]:GamepadModuleI
+        }
     }={};
 
-    registeredGamepadModules:{
-        [key:string]:GamepadModuleConfig
+    registeredGamepadModuleConfigs:{
+        [moduleId:string]:GamepadModuleConfig
     }={};
-
 
     constructor() {
         this.context = game[NAMESPACE];
+        Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
+        Hooks.on(HOOK_GAMEPAD_TICKED,this._gamepadTicked.bind(this));
     }
 
 
@@ -30,35 +33,35 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
                     actorId:"",
                     modules:{}
                 }
+                this.updateGamepadConfigs(result);
             }
         }
-        this.updateGamepadConfigs(result);
         return result;
     }
 
     registerGamepadModule(constructorPath:string) {
-        const gamepadModule = this._getGamepadModule("",constructorPath);
-        const key = constructorPath.replaceAll(".","-");
-        this.registeredGamepadModules[key] = gamepadModule.getDefaultConfig();
+        const gamepadModule = this._getGamepadModule(constructorPath);
+        const config = gamepadModule.getConfig();
+        this.registeredGamepadModuleConfigs[config.id] = gamepadModule.getConfig();
     }
 
     getGamepadModules(){
-        return {...this.registeredGamepadModules};
+        return {...this.registeredGamepadModuleConfigs};
     }
 
-
-    updateGamepadEventHandler(){
+    updateGamepadModuleInstance(){
         const gamepadConfigs = this.getGamepadConfigs();
-        this._unregisterGamepadEventHandler();
         for(const [gamepadIndex,gamepadConfig] of Object.entries(gamepadConfigs)){
-            for(const moduleConfig of Object.values(gamepadConfig.modules)){
-                const gamepadModule = this._getGamepadModule(gamepadConfig.actorId,moduleConfig.constructorPath);
-                gamepadModule.setConfig(moduleConfig);
-                const eventHandlerId = this.context.GamepadManager.registerEventHandler(gamepadIndex,gamepadModule.tick.bind(gamepadModule));
-                if(!this.registeredGamepadEventHandler[gamepadIndex]){
-                    this.registeredGamepadEventHandler[gamepadIndex] = [];
+            for(const [moduleId,moduleConfig] of Object.entries(gamepadConfig.modules)){
+                let gamepadModule = this._getRegisteredGamepadModuleInstance(gamepadIndex,moduleId);
+                if(!gamepadModule){
+                    gamepadModule = this._getGamepadModule(moduleConfig.constructorPath);
+                    if(!this.registeredGamepadModuleInstance[gamepadIndex]){
+                        this.registeredGamepadModuleInstance[gamepadIndex] = {};
+                    }
+                    this.registeredGamepadModuleInstance[gamepadIndex][moduleId] = gamepadModule;
                 }
-                this.registeredGamepadEventHandler[gamepadIndex].push(eventHandlerId);
+                gamepadModule.initialize(gamepadConfig.actorId,moduleConfig.binding);
             }
         }
     }
@@ -68,18 +71,41 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
         for(const [attribute,value] of Object.entries(data)){
             beaversSystemInterface.objectAttributeSet(gamepadConfigs,attribute,value);
         }
-        return this.context.Settings.setGamepadConfigs(gamepadConfigs);
+        return this.context.Settings.setGamepadConfigs(gamepadConfigs)
     }
 
     deleteGamepadConfigModule(gamepadIndex:string,moduleId:string):Promise<any>{
         const gamepadConfigs = this.context.Settings.getGamepadConfigs();
+        let gamepadModule = this._getRegisteredGamepadModuleInstance(gamepadIndex,moduleId);
+        if(gamepadModule){
+            gamepadModule.destroy();
+            delete this.registeredGamepadModuleInstance[gamepadIndex][moduleId];
+        }
         if(gamepadConfigs[gamepadIndex]?.modules[moduleId]){
             delete gamepadConfigs[gamepadIndex].modules[moduleId]
         }
         return this.context.Settings.setGamepadConfigs(gamepadConfigs);
     }
 
-    private _getGamepadModule(actorId:string, constructorPath:string):GamepadModuleI{
+    private _gamepadTicked(gamepadTickEvent:GamepadTickEvent){
+        const gamepadIndex = gamepadTickEvent.gamepad.index;
+        if(this.registeredGamepadModuleInstance[gamepadIndex]){
+            for(const gamepadModule of Object.values(this.registeredGamepadModuleInstance[gamepadIndex])){
+                gamepadModule.tick(gamepadTickEvent);
+            }
+        }
+    }
+
+    private _getRegisteredGamepadModuleInstance(gamepadIndex,moduleId): GamepadModuleI|undefined{
+        if(this.registeredGamepadModuleInstance[gamepadIndex]){
+            if(this.registeredGamepadModuleInstance[gamepadIndex][moduleId]) {
+                return this.registeredGamepadModuleInstance[gamepadIndex][moduleId] as GamepadModuleI
+            }
+        }
+        return undefined;
+    }
+
+    private _getGamepadModule(constructorPath:string):GamepadModuleI{
         const parts = constructorPath.split(".");
         let constructor = window;
         for(const part of parts){
@@ -87,15 +113,7 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
             constructor = constructor[part]
         }
         // @ts-ignore
-        return new constructor(actorId) as GamepadModuleI;
+        return new constructor() as GamepadModuleI;
     }
 
-    private _unregisterGamepadEventHandler(){
-        for( const [index,value] of Object.entries(this.registeredGamepadEventHandler) ){
-            value.forEach(id=>{
-                this.context.GamepadManager.unregisterEventHandler(index,id);
-            })
-        }
-        this.registeredGamepadEventHandler={};
-    }
 }
