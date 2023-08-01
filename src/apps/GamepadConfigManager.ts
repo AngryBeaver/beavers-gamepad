@@ -13,12 +13,10 @@ export class GamepadConfigManager implements GamepadConfigManagerI{
         [moduleId:string]:GamepadModuleConfig
     }={};
 
-
     constructor() {
         this.context = game[NAMESPACE];
         Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
         Hooks.on(HOOK_GAMEPAD_TICKED,this._gamepadTicked.bind(this));
-
     }
 
 

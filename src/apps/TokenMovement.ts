@@ -2,6 +2,7 @@ export class TokenMovement implements GamepadModuleI{
 
     private X_AXES = "Move-horizontal";
     private Y_AXES = "Move-vertical";
+    private UPDATE_TOKEN_HOOK = "updateToken";
 
     config: GamepadModuleConfig={
         binding: {
@@ -29,12 +30,18 @@ export class TokenMovement implements GamepadModuleI{
         point:any,
         size:number
     }
+    hook?:number
+
     constructor(){
     }
 
     public initialize(actorId:string, config: GamepadModuleConfigBinding){
         this.actorId = actorId;
         this.config.binding = config;
+        if(this.hook){
+            Hooks.off(this.UPDATE_TOKEN_HOOK,this.hook);
+        }
+        this.hook = Hooks.on(this.UPDATE_TOKEN_HOOK,this._tokenGotUpdated.bind(this));
     }
 
     public getConfig(): GamepadModuleConfig{
@@ -52,6 +59,14 @@ export class TokenMovement implements GamepadModuleI{
             this._move(x,y)
         }
         return true;
+    }
+
+    private _tokenGotUpdated(token:Token, options:any){
+        if(options.flags?.beaversTokenMovement == undefined && token.id === this.token?.id){
+            if(options.x != undefined || options.y != undefined){
+                this.token = undefined;
+            }
+        }
     }
 
     private _get(type:string,i:string,value:number){
@@ -79,22 +94,21 @@ export class TokenMovement implements GamepadModuleI{
     }
 
     private getPosition(){
-        if(!this.position){
+        if(!this.position && this.token){
             const token = this.token;
             // @ts-ignore
-            const center = token.getCenter(token.x, token.y);
-            // @ts-ignore
+            const size = canvas?.scene?.dimensions.size;
+            const x = Math.round(token.x/size)*size;
+            const y = Math.round(token.y/size)*size;
+            const center = token.getCenter(x, y);
             this.position ={
                 // @ts-ignore
                 collision:token.getMovementAdjustedPoint(center),
                 point:{
-                    // @ts-ignore
-                    x : token.x ,
-                    // @ts-ignore
-                    y : token.y
+                    x : x,
+                    y : y
                 },
-                // @ts-ignore
-                size: + canvas?.scene?.dimensions.size
+                size: size
             }
         }
         return this.position;
@@ -112,22 +126,26 @@ export class TokenMovement implements GamepadModuleI{
         }
         const token = this._getToken();
         const position = this.getPosition();
-        const movePoint = {...position.point }
-        movePoint.x = movePoint.x+ x*position.size;
-        movePoint.y = movePoint.y+ y*position.size;
-        const collisionPoint = {...position.collision }
-        collisionPoint.x = collisionPoint.x+ x*position.size
-        collisionPoint.y = collisionPoint.y+ y*position.size;
-        if (!token.checkCollision(collisionPoint) && this._checkSceneCollision(collisionPoint)) {
-            this.isMoving=true;
-            const toggle = !token.document["flags"]?.beaversTokenMovement
-            token.document.update({...movePoint,flags:{beaversTokenMovement:toggle}}).finally(()=>{
-                this.isMoving=false;
-                if(this.position) {
-                    this.position.point = movePoint;
-                    this.position.collision = collisionPoint;
-                }
-            })
+        if(position) {
+            const movePoint = {...position.point}
+            movePoint.x = movePoint.x + x * position.size;
+            movePoint.y = movePoint.y + y * position.size;
+            const collisionPoint = {...position.collision}
+            collisionPoint.x = collisionPoint.x + x * position.size
+            collisionPoint.y = collisionPoint.y + y * position.size;
+            if (!token.checkCollision(collisionPoint) && this._checkSceneCollision(collisionPoint)) {
+                this.isMoving = true;
+                token.document.update({
+                    ...movePoint,
+                    flags: {beaversTokenMovement: true}
+                }, {diff: false}).finally(() => {
+                    this.isMoving = false;
+                    if (this.position) {
+                        this.position.point = movePoint;
+                        this.position.collision = collisionPoint;
+                    }
+                })
+            }
         }
     }
 
@@ -145,7 +163,9 @@ export class TokenMovement implements GamepadModuleI{
 
 
     public destroy(){
-
+        if(this.hook){
+            Hooks.off(this.UPDATE_TOKEN_HOOK,this.hook);
+        }
     }
 
 }
