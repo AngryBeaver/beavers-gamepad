@@ -2,10 +2,25 @@ export class TokenMovement implements GamepadModuleI{
 
     private X_AXES = "Move-horizontal";
     private Y_AXES = "Move-vertical";
-    private NAME = "Beaver's Token Movement";
-    private CONSTRUCTOR_PATH = "game.beavers-gamepad.TokenMovement";
 
-    config: GamepadModuleConfig
+    config: GamepadModuleConfig={
+        binding: {
+            axes: {
+                "Move-horizontal": {
+                    index: "0",
+                    reversed: false
+                },
+                "Move-vertical": {
+                    index: "1",
+                    reversed: false
+                },
+            },
+            buttons:{}
+        },
+        name: "Beaver's Token Movement",
+        constructorPath: "game.beavers-gamepad.TokenMovement",
+        id:"beavers-token-movement"
+    }
     actorId: string
     isMoving:boolean = false;
     token?:Token;
@@ -14,34 +29,16 @@ export class TokenMovement implements GamepadModuleI{
         point:any,
         size:number
     }
+    constructor(){
+    }
 
-    constructor(actorId:string){
+    public initialize(actorId:string, config: GamepadModuleConfigBinding){
         this.actorId = actorId;
-        this.config = this.getDefaultConfig();
+        this.config.binding = config;
     }
 
-    public setConfig(handlerConfig: GamepadModuleConfig){
-        this.config = handlerConfig;
-    }
-
-    public getDefaultConfig():GamepadModuleConfig {
-        return {
-            binding: {
-                axes: {
-                    "Move-horizontal": {
-                        index: "0",
-                        reversed: false
-                    },
-                    "Move-vertical": {
-                        index: "1",
-                        reversed: false
-                    },
-                },
-                buttons:{}
-            },
-            name: this.NAME,
-            constructorPath: this.CONSTRUCTOR_PATH
-        };
+    public getConfig(): GamepadModuleConfig{
+        return this.config;
     }
 
     public tick(event: GamepadTickEvent):boolean{
@@ -123,7 +120,8 @@ export class TokenMovement implements GamepadModuleI{
         collisionPoint.y = collisionPoint.y+ y*position.size;
         if (!token.checkCollision(collisionPoint) && this._checkSceneCollision(collisionPoint)) {
             this.isMoving=true;
-            token.document.update(movePoint).finally(()=>{
+            const toggle = !token.document["flags"]?.beaversTokenMovement
+            token.document.update({...movePoint,flags:{beaversTokenMovement:toggle}}).finally(()=>{
                 this.isMoving=false;
                 if(this.position) {
                     this.position.point = movePoint;
@@ -145,5 +143,9 @@ export class TokenMovement implements GamepadModuleI{
             && collisionPoint.y > 0);
     }
 
+
+    public destroy(){
+
+    }
 
 }

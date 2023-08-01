@@ -3,7 +3,7 @@ import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 export class GamepadConfigApp extends FormApplication<any,any,any> implements GamepadConfigAppI {
 
 
-    handlerConfigs: {
+    gamepadModuleConfigs: {
         [key:string]:GamepadModuleConfig
     }
     context: Context;
@@ -43,11 +43,10 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
             throw new Error("Settings called before game has been initialized");
         }
         const actors = game.actors?.filter(a=>a.type==="character")||[];
-        this.handlerConfigs = this.context.GamepadConfigManager.getGamepadModules();
+        this.gamepadModuleConfigs = this.context.GamepadConfigManager.getGamepadModules();
         this.gamepadConfigs = this.context.GamepadConfigManager.getGamepadConfigs();
         return {
             hasGamepadConfigs: Object.values(this.gamepadConfigs).length>0,
-            hasHandlerConfigs: Object.values(this.handlerConfigs).length>0,
             gamepadConfigs: this.gamepadConfigs,
             actors: actors,
         }
@@ -55,11 +54,11 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
 
     activateListeners(html) {
         super.activateListeners(html)
-        html.find('.addGameHandlerSetting').on("click",e=>{
+        html.find('.addGamepadModule').on("click",e=>{
             const id = $(e.currentTarget).data("id");
             this.addGamepadModule(id);
         });
-        html.find('.close').on("click",e=>{
+        html.find('.delete').on("click",e=>{
             const id = $(e.currentTarget).data("id");
             const moduleId = $(e.currentTarget).data("module");
             this.context.GamepadConfigManager.deleteGamepadConfigModule(id,moduleId).then(()=>this.render());
@@ -79,21 +78,21 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         const selectData = {
             choices:{}
         }
-        for(const [key,handlerConfig] of Object.entries(this.handlerConfigs)){
-            if(!this.gamepadConfigs[gamepadIndex].modules[key]) {
-                selectData.choices[key] = {text: handlerConfig.name};
+        for(const [moduleId,moduleConfig] of Object.entries(this.gamepadModuleConfigs)){
+            if(!this.gamepadConfigs[gamepadIndex].modules[moduleId]) {
+                selectData.choices[moduleId] = {text: moduleConfig.name};
             }
         }
-        const key = await beaversSystemInterface.uiDialogSelect(selectData);
+        const selectedId = await beaversSystemInterface.uiDialogSelect(selectData);
         const data = {}
-        data[gamepadIndex+'.modules.'+key] = this.handlerConfigs[key];
+        data[gamepadIndex+'.modules.'+selectedId] = this.gamepadModuleConfigs[selectedId];
         this.context.GamepadConfigManager.updateGamepadConfigs(data).then(()=>this.render());
     }
 
 
     close(options?: FormApplication.CloseOptions): Promise<void>{
         const result = super.close(options);
-        this.context.GamepadConfigManager.updateGamepadEventHandler();
+        this.context.GamepadConfigManager.updateGamepadModuleInstance();
         Hooks.off(HOOK_GAMEPAD_CONNECTED,this.hook);
         return result
     }

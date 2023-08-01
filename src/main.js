@@ -8,6 +8,7 @@ import {DND5e} from "./systems/DND5e.js";
 export const NAMESPACE = "beavers-gamepad"
 export const HOOK_READY = NAMESPACE+".ready";
 export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
+export const HOOK_GAMEPAD_TICKED = NAMESPACE+".ticked";
 
 Hooks.on("ready", async function(){
     if(!game[NAMESPACE]){

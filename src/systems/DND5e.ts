@@ -29,7 +29,7 @@ export class DND5e {
                             if (transformedID != undefined) {
                                 data[gamepadIndex + ".actorId"] = transformedID;
                                 Hooks.off("createActor", closure.hook);
-                                await manager.updateGamepadConfigs(data).then(() => manager.updateGamepadEventHandler())
+                                await manager.updateGamepadConfigs(data).then(() => manager.updateGamepadModuleInstance())
                             }
                         }
                     }
@@ -55,7 +55,7 @@ export class DND5e {
                 const manager = game[NAMESPACE].GamepadConfigManager as GamepadConfigManager;
                 const data = {};
                 data[gamepadIndex + ".actorId"] = "Actor."+actorId;
-                await manager.updateGamepadConfigs(data).then(()=>manager.updateGamepadEventHandler())
+                await manager.updateGamepadConfigs(data).then(()=>manager.updateGamepadModuleInstance())
             }
         }
 

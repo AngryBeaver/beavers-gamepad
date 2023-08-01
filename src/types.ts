@@ -11,6 +11,7 @@ interface GamepadConfig {
 }
 
 interface GamepadModuleConfig {
+    id: string
     name: string
     constructorPath: string
     binding:GamepadModuleConfigBinding
@@ -44,6 +45,8 @@ interface GamepadTickEvent {
     gamepad:Gamepad,
     hasAnyButtonTicked:boolean,
     hasAnyAxesTicked:boolean,
+    isAnyButtonPressed:boolean,
+    hasAnyAxesActivity:boolean,
     axes: {
         [key: string]: number
     }
@@ -68,25 +71,21 @@ interface SettingsI {
 }
 interface BeaversGamepadManagerI {
     getRegisteredGamepads:()=>RegisteredGamepads
-    registerEventHandler: (gamepadIndex:string,event: GamepadTickEventHandle)=>string
-    unregisterEventHandler: (gamepadIndex:string, handlerId:string)=>void
 }
 interface GamepadConfigManagerI {
     getGamepadConfigs:()=>GamepadConfigs
     getGamepadModules:()=>{
         [key:string]:GamepadModuleConfig
     }
-    updateGamepadEventHandler:()=>void
+    updateGamepadModuleInstance:()=>void
     updateGamepadConfigs:(data:{[key:string]:any})=>Promise<any>
     deleteGamepadConfigModule:(gamepadIndex:string,moduleId:string)=>Promise<any>
 }
 
-type GamepadTickEventHandle = (tickEvent: GamepadTickEvent) => boolean;
-
-
 interface GamepadModuleI {
-    setConfig:(handlerConfig: GamepadModuleConfig)=>void
-    getDefaultConfig:()=> GamepadModuleConfig
+    initialize:(actorId:string,config: GamepadModuleConfigBinding)=>void
+    getConfig:()=> GamepadModuleConfig
     tick:(GamepadTickEventHandle)=>boolean
+    destroy:()=>void
 }
 
