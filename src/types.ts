@@ -10,26 +10,6 @@ interface GamepadConfig {
     }
 }
 
-interface GamepadModuleConfig {
-    id: string
-    name: string
-    constructorPath: string
-    binding:GamepadModuleConfigBinding
-}
-
-interface GamepadModuleConfigBinding {
-    axes:{
-        [name:string]:{
-            index:string
-            reversed: boolean
-        }
-    }
-    buttons:{
-        [name:string]:{
-            index:string
-        }
-    }
-}
 
 interface RegisteredGamepads {
     [gamepadIndex: string]: {
@@ -58,7 +38,7 @@ interface GamepadTickEvent {
 interface Context {
     Settings: SettingsI,
     GamepadManager: BeaversGamepadManagerI
-    GamepadConfigManager:GamepadConfigManagerI
+    GamepadModuleManager:GamepadModuleManagerInstance
     GamepadConfigApp?: GamepadConfigAppI
 }
 
@@ -72,20 +52,15 @@ interface SettingsI {
 interface BeaversGamepadManagerI {
     getRegisteredGamepads:()=>RegisteredGamepads
 }
-interface GamepadConfigManagerI {
+interface GamepadModuleManagerInstance {
     getGamepadConfigs:()=>GamepadConfigs
     getGamepadModules:()=>{
-        [key:string]:GamepadModuleConfig
+        [key:string]:GamepadModule
     }
+    tick:(gamepadTickEvent:GamepadTickEvent)=>void
     updateGamepadModuleInstance:()=>void
     updateGamepadConfigs:(data:{[key:string]:any})=>Promise<any>
     deleteGamepadConfigModule:(gamepadIndex:string,moduleId:string)=>Promise<any>
 }
 
-interface GamepadModuleI {
-    initialize:(actorId:string,config: GamepadModuleConfigBinding)=>void
-    getConfig:()=> GamepadModuleConfig
-    tick:(GamepadTickEventHandle)=>boolean
-    destroy:()=>void
-}
 

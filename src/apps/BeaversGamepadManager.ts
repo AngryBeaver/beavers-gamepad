@@ -1,4 +1,4 @@
-import {HOOK_GAMEPAD_CONNECTED, HOOK_GAMEPAD_TICKED, NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 
 export class BeaversGamepadManager implements BeaversGamepadManagerI{
     gamepads: {
@@ -66,7 +66,6 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             this._gatherButtonTickEvent(gamepadTickEvent);
             this._gatherAxesTickEvent(gamepadTickEvent);
             this._triggerGamepadTickEvent(gamepadTickEvent);
-
         }
     }
 
@@ -98,19 +97,15 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
                 if(data.axes[index]>0){
                     data.axes[index]=0
                 }
-                if(data.axes[index]!=-1){
-                    gamepadTickEvent.hasAnyAxesTicked = true;
-                    gamepadTickEvent.axes[index] = -1
-                }
+                gamepadTickEvent.hasAnyAxesTicked = true;
+                gamepadTickEvent.axes[index] = -1
                 data.axes[index] = data.axes[index]-1;
             }else if (value > 5){
                 if(data.axes[index]<0){
                     data.axes[index]=0
                 }
-                if(data.axes[index]!=1){
-                    gamepadTickEvent.hasAnyAxesTicked = true;
-                    gamepadTickEvent.axes[index] = 1
-                }
+                gamepadTickEvent.hasAnyAxesTicked = true;
+                gamepadTickEvent.axes[index] = 1
                 data.axes[index] = data.axes[index]+1;
             } else {
                 data.axes[index]= 0;
@@ -119,9 +114,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
-        if(gamepadTickEvent.hasAnyAxesActivity || gamepadTickEvent.isAnyButtonPressed) {
-            Hooks.call(HOOK_GAMEPAD_TICKED, gamepadTickEvent);
-        }
+        this.context.GamepadModuleManager.tick(gamepadTickEvent);
     }
 
 }

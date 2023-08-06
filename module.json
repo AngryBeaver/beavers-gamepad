@@ -2,7 +2,7 @@
     "title": "Beaver's Gamepad",
     "description": "For controlling actors while playing locally on a central map monitor",
     "id": "beavers-gamepad",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "authors": [
       {
         "name": "angryBeaver",
@@ -36,8 +36,8 @@
           "type": "module",
           "manifest": "https://github.com/AngryBeaver/beavers-system-interface/releases/latest/download/module.json",
           "compatibility": {
-            "minimum" : "2.1.3",
-            "verified": "2.1.3"
+            "minimum" : "2.1.4",
+            "verified": "2.1.4"
           }
         }
       ]
