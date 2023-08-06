@@ -7,9 +7,6 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             button: {
                 [buttonIndex: string]: number
             };
-            axes: {
-                [axesIndex: string]: number
-            };
             count:{
                 buttons: number,
                 axes: number
@@ -44,7 +41,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
 
     private _registerGamePad(gamepad: Gamepad) {
         console.log("GamePad registered");
-        this.gamepads[gamepad.index] = {button: {}, axes: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
+        this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
         Hooks.call(HOOK_GAMEPAD_CONNECTED);
     }
 
@@ -79,7 +76,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             } else {
                 data.button[index] = 0;
             }
-            if (data.button[index] == 1 || data.button[index] > 10) {
+            if (data.button[index] == 1 || data.button[index] > 5) {
                 gamepadTickEvent.buttons[index]=1;
                 gamepadTickEvent.hasAnyButtonTicked=true;
             }
@@ -87,28 +84,17 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
     private _gatherAxesTickEvent(gamepadTickEvent:GamepadTickEvent){
         const gamepad = gamepadTickEvent.gamepad;
-        const data = this.gamepads[gamepad.index];
         for (const [index, axis] of gamepad.axes.entries()) {
             const value = axis * 10;
             if (value < -1 || value > 1){
                 gamepadTickEvent.hasAnyAxesActivity=true;
             }
-            if (value < -5) {
-                if(data.axes[index]>0){
-                    data.axes[index]=0
-                }
+            if (value < -3) {
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = -1
-                data.axes[index] = data.axes[index]-1;
-            }else if (value > 5){
-                if(data.axes[index]<0){
-                    data.axes[index]=0
-                }
+            }else if (value > 3){
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = 1
-                data.axes[index] = data.axes[index]+1;
-            } else {
-                data.axes[index]= 0;
             }
         }
     }
