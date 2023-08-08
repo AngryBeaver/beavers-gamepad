@@ -16,7 +16,7 @@ You need to go to the module Settings "Beaver's Gamepad" underneath "Configure S
 
 ![](pictures/gamepadConfig.png)
 
-Here you can press the confiugre button:
+Here you can press the configure button:
 
 ![](pictures/empty.png)
 
@@ -30,9 +30,9 @@ Then you can add a gamepadModule to this controller:
 
 ![](pictures/beavers-token-movement.png)
 
-For now I have only written one gamepadModule which is beavers-token-movemnt. 
+For now I have only written one gamepadModule which is beavers-token-movement. 
 - It uses 2 Axes per default axes 0,1 which is mostlikly the lefthand stick of your controller.
-- You can reverse axes when your monitor is laying on the table flat and some of your player look at it from upsidedown side.
+- You can reverse axes when your monitor is laying on the table flat and some of your player look at it from upside down.
 
 
 ## Limitations
