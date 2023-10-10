@@ -14,24 +14,56 @@
     </div>
     {{#each gamepadConfigs}}
         <h2>{{this.gamepadId}}-{{@key}}</h2>
-        <div class="flexcol" style="margin:20px">
-            <div class="flexrow" style="margin-bottom:20px;">
-                <div style="width:120px;">{{localize "beaversGamepad.gamepadConfigApp.actorLabel"}}</div>
-                <beavers-selection>
-                    <select name="{{@key}}.actorId">
-                        {{#select this.actorId}}
-                            <option selected disabled value=""></option>
-                            {{#each ../actors}}
-                                <option value="{{this.uuid}}" img="{{this.img}}">
-                                    {{this.name}}
-                                </option>
-                            {{/each}}
-                        {{/select}}
-                    </select>
-                </beavers-selection>
+        <div style="margin:0px 20px 20px 20px">
+            <div class="form-group">
+                <label>{{localize "beaversGamepad.gamepadConfigApp.user"}}</label>
+                <div class="form-fields">
+                    {{#if this.userId}}
+                        <div style="padding-right:20px;
+                                text-indent: 20px;
+                                background-size: 18px 18px;
+                                background-position-y: 1px;
+                                background-repeat: no-repeat;
+                                background-image:url('{{lookup (lookup ../users this.userId) "avatar"}}')">{{lookup
+                                (lookup ../users this.userId) "name"}}</div>
+                        <input name="{{@key}}.userId" type="hidden" value="{{this.userId}}">
+                        <a class="removeUser" style="flex:0" data-id="{{@key}}">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    {{else}}
+                        <button data-id="{{@key}}" class="addUser" style="min-width:100%">
+                            <i class="fas fa-user"></i>
+                            {{localize "beaversGamepad.gamepadConfigApp.addUser"}}
+                        </button>
+                    {{/if}}
+                </div>
+                <p class="notes">
+                    {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
+                </p>
+            </div>
+            <div class="form-group">
+                <label>{{localize "beaversGamepad.gamepadConfigApp.actorLabel"}}</label>
+                <div class="form-fields">
+                    <beavers-selection>
+                        <select name="{{@key}}.actorId">
+                            {{#select this.actorId}}
+                                <option selected disabled value=""></option>
+                                {{#each ../actors}}
+                                    <option value="{{this.uuid}}" img="{{this.img}}">
+                                        {{this.name}}
+                                    </option>
+                                {{/each}}
+                            {{/select}}
+                        </select>
+                    </beavers-selection>
+                </div>
+                <p class="notes">
+                    {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
+                </p>
             </div>
             {{#each this.modules}}
-                <div class="flexcol" style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
+                <div class="flexcol"
+                     style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
                     <div style="font-weight:800;margin-bottom:20px" class="flexrow">
                         <div>{{this.name}}</div>
                         <a class="delete" style="flex:0" data-id="{{@../key}}" data-module="{{@key}}">
@@ -43,14 +75,16 @@
                             <div style="width:120px;margin-right:5px">{{@key}}:</div>
                             <input type="number" name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.index"
                                    value="{{this.index}}"/>
-                            <div style="width:120px;margin:0px 5px">{{localize "beaversGamepad.gamepadConfigApp.reversedLabel"}}</div>
+                            <div style="width:120px;margin:0px 5px">{{localize
+                                    "beaversGamepad.gamepadConfigApp.reversedLabel"}}</div>
                             <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.reversed"
                                    type="checkbox" {{#if this.reversed}}checked{{/if}}/>
                         </div>
                     {{/each}}
                 </div>
             {{/each}}
-            <button data-id="{{@key}}" class="addGamepadModule">{{localize "beaversGamepad.gamepadConfigApp.addModule"}}</button>
+            <button data-id="{{@key}}" class="addGamepadModule">{{localize
+                    "beaversGamepad.gamepadConfigApp.addModule"}}</button>
         </div>
     {{/each}}
 </form>

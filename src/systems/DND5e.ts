@@ -1,4 +1,5 @@
 import {NAMESPACE} from "../main.js";
+import {Context} from "../GamepadSettings.js";
 
 const HOOK_DND5E_TRANSFORMED = "dnd5e.transformActor";
 const HOOK_DND5E_REVERTFORM = "dnd5e.revertOriginalForm";
@@ -7,7 +8,7 @@ export class DND5e {
     context: Context;
 
     constructor() {
-        this.context = game[NAMESPACE]
+        this.context = game[NAMESPACE];
         Hooks.on(HOOK_DND5E_TRANSFORMED, this._transformActor.bind(this));
         Hooks.on(HOOK_DND5E_REVERTFORM, this._revertForm.bind(this));
     }
@@ -26,12 +27,11 @@ export class DND5e {
                     if (n.name === p.name) {
                         // @ts-ignore
                         const transformedID = game.actors.find(a => a.name === p.name).uuid;
-                        const manager = this.context.GamepadModuleManager;
                         const data = {};
                         if (transformedID != undefined) {
                             data[gamepadIndex + ".actorId"] = transformedID;
                             Hooks.off("createActor", closure.hook);
-                            await manager.updateGamepadConfigs(data).then(() => manager.updateGamepadModuleInstance())
+                            await this.settings.updateGamepadConfigs(data)
                         }
                     }
                 }
@@ -40,7 +40,7 @@ export class DND5e {
     }
 
     private getGamepadIndexForActor(id: string) {
-        const gamepadConfigs = game[NAMESPACE].Settings.getGamepadConfigs() as GamepadConfigs
+        const gamepadConfigs = this.context.Settings.getGamepadConfigs()
         const result: string[] = [];
         for (const [key, gamepadConfig] of Object.entries(gamepadConfigs)) {
             if (gamepadConfig.actorId === id) {
@@ -57,7 +57,7 @@ export class DND5e {
             const manager = this.context.GamepadModuleManager;
             const data = {};
             data[gamepadIndex + ".actorId"] = "Actor." + actorId;
-            await manager.updateGamepadConfigs(data).then(() => manager.updateGamepadModuleInstance())
+            await this.context.Settings.updateGamepadConfigs(data).then(() => manager.updateGamepadModuleInstance())
         }
     }
 

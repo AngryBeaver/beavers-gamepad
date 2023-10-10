@@ -1,0 +1,69 @@
+<form autocomplete="off">
+    <div class="flexcol" style="margin-bottom:5px;">
+        <div style="box-shadow:0 0 0 1px #a9d5de inset, 0 0 0 0 transparent;    background-color: #f8ffff;
+    color: #276f86;padding:10px;border-radius:5px;margin:2px;">
+            {{localize "beaversGamepad.uiConfigApp.info"}}
+        </div>
+    </div>
+    {{#each uiData}}
+        <div class="flexcol"
+             style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
+            <div style="font-weight:800;margin-bottom:20px" class="flexrow">
+                <div>{{lookup (lookup ../users @key) "name"}}</div>
+                <a class="removeUser" style="flex:0" data-id="{{@key}}">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+            <div class="form-group">
+                <label>{{localize "beaversGamepad.uiConfigApp.userPosition"}}</label>
+                <div class="form-fields">
+                    <beavers-selection>
+                        <select name="{{@key}}.userPosition">
+                            {{#select this.userPosition}}
+                                <option value="bottom">bottom</option>
+                                <option value="left">left</option>
+                                <option value="right">right</option>
+                                <option value="top">top</option>
+                            {{/select}}
+                        </select>
+                    </beavers-selection>
+                </div>
+                <p class="notes">
+                    {{localize "beaversGamepad.uiConfigApp.userPositionHint"}}
+                </p>
+            </div>
+            <div class="form-group">
+                <label>{{localize "beaversGamepad.uiConfigApp.tinyUI"}}</label>
+                <div class="form-fields">
+                    <input type="checkbox" name="{{@key}}.enableUI" {{#if this.enableUI}}checked{{/if}}>
+                </div>
+                <p class="notes">
+                    {{localize "beaversGamepad.uiConfigApp.tinyUIHint"}}
+                </p>
+            </div>
+        </div>
+    {{/each}}
+    <h2></h2>
+    <div class="form-group">
+        <label>{{localize "beaversGamepad.uiConfigApp.addUser"}}</label>
+        <div class="form-fields">
+            <beavers-selection>
+                <select name="addUser">
+                    {{#each users}}
+                        {{#unless (lookup ../uiData @key)}}
+                            <option value="{{@key}}">{{this.name}}</option>
+                        {{/unless}}
+                    {{/each}}
+                </select>
+            </beavers-selection>
+            <button class="addUser"><i class="fas fa-plus"></i></button>
+        </div>
+        <p class="notes">
+            {{localize "beaversGamepad.uiConfigApp.addUserHint"}}
+        </p>
+    </div>
+    <button type="submit">
+        <i class="fas fa-save"></i>
+        {{localize "Save Changes"}}
+    </button>
+</form>

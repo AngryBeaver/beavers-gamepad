@@ -1,15 +1,17 @@
+
+
 interface GamepadConfigs {
     [gamepadIndex:string]:GamepadConfig
 }
 
 interface GamepadConfig {
+    userId:string,
     gamepadId:string,
     actorId:string,
     modules:{
         [key:string]: GamepadModuleConfig
     }
 }
-
 
 interface RegisteredGamepads {
     [gamepadIndex: string]: {
@@ -35,32 +37,39 @@ interface GamepadTickEvent {
     }
 }
 
-interface Context {
-    Settings: SettingsI,
-    GamepadManager: BeaversGamepadManagerI
-    GamepadModuleManager:GamepadModuleManagerInstance
-    GamepadConfigApp?: GamepadConfigAppI
-}
-
 interface GamepadConfigAppI{
 }
 
-interface SettingsI {
-    getGamepadConfigs:()=>GamepadConfigs,
-    setGamepadConfigs:(gamepadConfigs: GamepadConfigs)=>Promise<any>
-}
 interface BeaversGamepadManagerI {
     getRegisteredGamepads:()=>RegisteredGamepads
 }
 interface GamepadModuleManagerInstance {
-    getGamepadConfigs:()=>GamepadConfigs
     getGamepadModules:()=>{
         [key:string]:GamepadModule
     }
     tick:(gamepadTickEvent:GamepadTickEvent)=>void
     updateGamepadModuleInstance:()=>void
-    updateGamepadConfigs:(data:{[key:string]:any})=>Promise<any>
-    deleteGamepadConfigModule:(gamepadIndex:string,moduleId:string)=>Promise<any>
+    deleteGamepadModuleInstance:(gamepadIndex:string,moduleId:string)=>void
+    registerGamepadModule:(GamepadModule:GamepadModule)=>void,
 }
 
+interface UIModule{
+    name: string,
+    process: ()=>void,
+}
+
+interface UIDataOption{
+    updateUI?: boolean;
+}
+interface UIData {
+    [userId:string]: UserData
+}
+
+interface UserData {
+    userPosition: string,
+    enableUI: boolean,
+    top: number,
+    left: number,
+    [key:string]: any
+}
 
