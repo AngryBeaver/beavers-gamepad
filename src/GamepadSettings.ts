@@ -5,11 +5,11 @@ import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {UIConfigApp} from "./apps/UIConfigApp.js";
 
 export const USER_UI: string = "user_ui";
+export const ACTOR_FILTER = "actor_filter";
 
 export class GamepadSettings {
 
     private GAMEPAD_CONFIG = "gamepad_config";
-    private ACTOR_FILTER = "actor_filter";
     private GAMEPAD_CONFIG_BUTTON = "gamepad_config_button";
     private UI_CONFIG_BUTTON = "ui_config_button"
 
@@ -30,7 +30,7 @@ export class GamepadSettings {
             type: Object
         });
 
-        game.settings.register(NAMESPACE, this.ACTOR_FILTER, {
+        game.settings.register(NAMESPACE, ACTOR_FILTER, {
             name: game.i18n.localize('beaversGamepad.settings.actorFilter.name'),
             hint: game.i18n.localize('beaversGamepad.settings.actorFilter.hint'),
             scope: "client",
@@ -142,17 +142,26 @@ export class GamepadSettings {
 
     getGamepadConfig(gamepadIndex:string): GamepadConfig{
         const registeredGamepads = this._gamepadManager.getRegisteredGamepads();
-        const gamepadConfig = this._getGamepadConfigs();
-        if(gamepadConfig[gamepadIndex] && registeredGamepads[gamepadIndex].id === gamepadConfig[gamepadIndex].gamepadId){
-            return gamepadConfig[gamepadIndex]
-        }else{
-            return {
+        const gamepadConfigs = this._getGamepadConfigs();
+        if(!gamepadConfigs[gamepadIndex] || registeredGamepads[gamepadIndex].id !== gamepadConfigs[gamepadIndex].gamepadId){
+            gamepadConfigs[gamepadIndex] = {
                 userId:"",
                 gamepadId: registeredGamepads[gamepadIndex].id,
                 actorId: "",
                 modules: {}
             }
+            this._setGamepadConfigs(gamepadConfigs);
         }
+        return gamepadConfigs[gamepadIndex]
+    }
+    getGamepadIndexForUser(userId:string):string | undefined {
+        const gamepadIndexes = Object.entries(this.getGamepadConfigs()).filter(([k,v])=>{
+            v.userId === userId
+        }).map(([k,v])=>k);
+        if(gamepadIndexes[0]){
+            return gamepadIndexes[0]
+        }
+        return undefined;
     }
 
 

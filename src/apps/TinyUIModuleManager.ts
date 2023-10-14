@@ -31,6 +31,8 @@ export class TinyUIModuleManager {
                 }else{
                     this.addInstance(userId);
                 }
+            }else{
+                this.removeInstance(userId);
             }
         }
     }
@@ -40,8 +42,10 @@ export class TinyUIModuleManager {
         this._data.instances[userId].render(true);
     }
     async removeInstance(userId:string){
-        await this._data.instances[userId].close();
-        delete this._data.instances[userId];
+        if(this._data.instances[userId]) {
+            await this._data.instances[userId].close();
+            delete this._data.instances[userId];
+        }
     }
 
     addModule(moduleId:string,uiModule:UIModule){

@@ -8,15 +8,14 @@
 import {NAMESPACE} from "../main.js";
 import {GamepadSettings} from "../GamepadSettings.js";
 
-export class TinyUserInterface extends Application {
+export class TinyUserInterface extends Application implements UserInput {
 
     _data: {
         userId: string,
         wheel: number,
-        choices: {
-            [id:string]:{ text: string }
-        },
+        selectData: SelectData,
         resolve?:(any)=>void,
+        html: any,
     }
     _settings: GamepadSettings;
 
@@ -26,7 +25,8 @@ export class TinyUserInterface extends Application {
         this._data = {
             userId: userId,
             wheel: 0,
-            choices: {},
+            selectData: {choices:{}},
+            html: null,
         };
         const userData = this._settings.getUserData(userId);
         if (this.element.length > 0) {
@@ -52,30 +52,35 @@ export class TinyUserInterface extends Application {
         });
     }
 
+    get userId(){
+        return this._data.userId;
+    }
+
     async getData(options = {}) {
         const userData = this._settings.getUserData(this._data.userId);
         return {
             transform: userData.userPosition==="left"?"90deg":userData.userPosition==="top"?"180deg":userData.userPosition==="right"?"270deg":"0deg",
             userData: userData,
             user: game["users"].get(this._data.userId),
-            choices: this._data.choices,
+            choices: this._data.selectData.choices,
         }
     }
 
     activateListeners(html) {
+        this._data.html = html;
         html.find(".selection").on("wheel", (e) => {
             if (e.originalEvent.deltaY > 0) {
-                this._rotateWheel(1, html);
+                this.rotateWheel(1);
             }
             if (e.originalEvent.deltaY < 0) {
-                this._rotateWheel(-1, html);
+                this.rotateWheel(-1);
             }
         });
         html.find("a.up").on("click", (e) => {
-            this._rotateWheel(1, html);
+            this.rotateWheel(1);
         });
         html.find("a.down").on("click", (e) => {
-            this._rotateWheel(-1, html);
+            this.rotateWheel(-1);
         });
         html.find(".select").on("click", (e) => {
             const id = $(e.currentTarget).data().key;
@@ -91,8 +96,12 @@ export class TinyUserInterface extends Application {
 
     }
 
-    public async select(choices: { [id: string]: { text: string } }):Promise<string> {
-        this._data.choices = choices
+    public async select(selectData: SelectData):Promise<string> {
+        const gamepadIndex = this._settings.getGamepadIndexForUser(this.userId);
+        if(gamepadIndex){
+            game[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,this.userId);
+        }
+        this._data.selectData = selectData
         const dfd = new Deferred<string>();
         this._data.resolve = dfd.resolve;
         await this._render(true);
@@ -105,18 +114,22 @@ export class TinyUserInterface extends Application {
         }
     }
 
-    async _reset(){
-        this._data.choices = {};
+    async _reset() {
+        this._data.selectData = {choices:{}};
         this._data.wheel = 0;
         this._render(true);
     }
 
-    _rotateWheel(count: number, html) {
+    /**
+     * may get called via gamepadmodule
+     * @param count
+     */
+    public rotateWheel(count: number) {
         this._data.wheel += count;
-        const length = Object.values(this._data.choices).length;
+        const length = Object.values(this._data.selectData.choices).length;
         this._data.wheel = Math.min(length - 1, Math.max(0, this._data.wheel))
         const top = 7 - this._data.wheel * 21;
-        html.find(".wheel").css({top: top});
+        this._data.html.find(".wheel").css({top: top});
     }
 
 }

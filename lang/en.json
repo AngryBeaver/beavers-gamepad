@@ -1,5 +1,8 @@
 {
   "beaversGamepad": {
+    "errors": {
+      "UserHasNoGamepad": "No gamepad associated with user"
+    },
     "settings": {
       "uiConfig": {
         "name": "User Configuration",
@@ -23,7 +26,6 @@
       "user": "User:",
       "addUser": "assign User",
       "userHint": "Each gamepad needs to be assigned to an user.",
-
       "actorLabel": "Actor:",
       "reversedLabel": "Reversed:",
       "addModule": "add gamepad module"

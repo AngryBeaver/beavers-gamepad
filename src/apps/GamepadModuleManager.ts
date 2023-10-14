@@ -12,11 +12,12 @@ export class GamepadModuleManager implements GamepadModuleManagerInstance{
             [moduleId:string]:GamepadModuleInstance
         }
     }={};
-
     registeredGamepadModules:{
         [moduleId:string]:GamepadModule
     }={};
-
+    enabledContextModules:{
+        [gamepadIndex:string]: string
+    }={}
     constructor() {
         this.context = game[NAMESPACE];
         Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
@@ -33,6 +34,14 @@ export class GamepadModuleManager implements GamepadModuleManagerInstance{
 
     getGamepadModules(){
         return {...this.registeredGamepadModules};
+    }
+
+    enableContextModule(gamepadIndex:string, focusModuleId:string){
+        this.enabledContextModules[gamepadIndex] = focusModuleId;
+    }
+
+    disableContextModule(gamepadIndex:string){
+        delete this.enabledContextModules[gamepadIndex];
     }
 
     /**
@@ -74,11 +83,20 @@ export class GamepadModuleManager implements GamepadModuleManagerInstance{
      * @param gamepadTickEvent
      */
     tick(gamepadTickEvent:GamepadTickEvent){
-        const gamepadModules = this.registeredGamepadModuleInstances[gamepadTickEvent.gamepad.index];
+        const gamepadIndex = gamepadTickEvent.gamepad.index;
+        const gamepadModules = this.registeredGamepadModuleInstances[gamepadIndex];
         if(gamepadModules){
-            for(const gamepadModuleInstance of Object.values(gamepadModules)){
-                if(!gamepadModuleInstance.tick(gamepadTickEvent)){
-                    return
+            for(const [moduleId,gamepadModuleInstance] of Object.entries(gamepadModules)){
+                if(this.enabledContextModules[gamepadIndex]){
+                    if (this.enabledContextModules[gamepadIndex] === moduleId) {
+                        gamepadModuleInstance.tick(gamepadTickEvent);
+                        return;
+                    }
+                } else {
+                    // @ts-ignore
+                    if (gamepadModuleInstance.getConfig().isContextModule &&! gamepadModuleInstance.tick(gamepadTickEvent)) {
+                        return
+                    }
                 }
             }
         }

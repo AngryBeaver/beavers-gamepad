@@ -1,6 +1,6 @@
 <div class="beavers-proximity-action app flexrow"
      style="transform:rotate({{transform}});position:absolute; padding:0px 0px; height:50px; width:210px; top:{{userData.top}}px; left:{{userData.left}}px; border: 1px solid var(--color-border-dark);">
-    <div class="drag-me" style="flex:12px 0;cursor: move;background-color:{{user.color}}"></div>
+    <div class="drag-me" style="flex:12px 0;border-right:1px solid black;cursor: move;background-color:{{user.color}}"></div>
     <div class="flexrow" style="padding:8px 2px 8px 0px;">
         <img style="flex:0;border:0px" height="32px" src="{{user.avatar}}"/>
         {{#if (gt (beavers-objectLen 1))}}

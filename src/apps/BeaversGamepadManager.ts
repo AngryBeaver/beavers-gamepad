@@ -11,11 +11,12 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             id: string
             button: {
                 [buttonIndex: string]: number
-            };
+            },
             count:{
                 buttons: number,
                 axes: number
-            }
+            },
+            consecutiveTicks:number
         }
     } = {};
     context: Context;
@@ -45,7 +46,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _registerGamePad(gamepad: Gamepad) {
-        this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
+        this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length},consecutiveTicks:0}
         Hooks.call(HOOK_GAMEPAD_CONNECTED);
     }
 
@@ -105,6 +106,18 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
 
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
         this.context.GamepadModuleManager.tick(gamepadTickEvent);
+    }
+    //TODO configurable tick
+    /**
+     * this is called by gamepadmodules and will create smooth ticks
+     * @param gamepad
+     * @param gamepadConfig
+     * @param position
+     */
+    public axesTick(gamepad:Gamepad, gamepadConfig: GamepadConfig,position: string):{x:number,y:number}{
+        //howToAlignAxis consecutive ticks should only appear with two axes aligned e.g. x,y
+        //it should not tick for another x,z
+        return {x:0,y:0}
     }
 
 }

@@ -1,5 +1,5 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
-import {Context} from "../GamepadSettings.js";
+import {ACTOR_FILTER, Context} from "../GamepadSettings.js";
 
 /**
  * this is the configuration module that allows to add and delete and configure gamepadmodules
@@ -46,7 +46,8 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         if (!(game instanceof Game)) {
             throw new Error("Settings called before game has been initialized");
         }
-        const actors = game.actors?.filter(a=>a.type==="character")||[];
+        const filter = this.context.Settings.get(ACTOR_FILTER);
+        const actors = game.actors?.filter(a=>a.type===filter)||[];
         this.gamepadModules = this.context.GamepadModuleManager.getGamepadModules();
         this.gamepadConfigs = this.context.Settings.getGamepadConfigs();
         return {

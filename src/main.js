@@ -3,6 +3,7 @@ import {GamepadSettings} from "./GamepadSettings.js";
 import {DND5e} from "./systems/DND5e.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {TinyUIModuleManager} from "./apps/TinyUIModuleManager.js";
+import {TinyUserInterfaceGamepadModule} from "./apps/TinyUserInterfaceGamepadModule.js";
 
 
 export const NAMESPACE = "beavers-gamepad"
@@ -25,6 +26,7 @@ Hooks.on("ready", async function(){
         Hooks.call(HOOK_READY, game[NAMESPACE].GamepadModuleManager);
         game[NAMESPACE].GamepadModuleManager.updateGamepadModuleInstance();
         game[NAMESPACE].TinyUIModuleManager.updateUIModules();
+        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
 
     },1000);
 });

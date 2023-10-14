@@ -55,7 +55,7 @@ interface GamepadModuleManagerInstance {
 
 interface UIModule{
     name: string,
-    process: ()=>void,
+    process: (userId:string,userInput:UserInput)=>Promise<void>,
 }
 
 interface UIDataOption{
@@ -71,5 +71,9 @@ interface UserData {
     top: number,
     left: number,
     [key:string]: any
+}
+
+interface UserInput {
+    select: (data: SelectData)=>Promise<string>
 }
 
