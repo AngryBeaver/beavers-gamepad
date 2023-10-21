@@ -15,8 +15,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             count:{
                 buttons: number,
                 axes: number
-            },
-            consecutiveTicks:number
+            }
         }
     } = {};
     context: Context;
@@ -46,7 +45,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _registerGamePad(gamepad: Gamepad) {
-        this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length},consecutiveTicks:0}
+        this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
         Hooks.call(HOOK_GAMEPAD_CONNECTED);
     }
 
@@ -94,10 +93,10 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             if (value < -1 || value > 1){
                 gamepadTickEvent.hasAnyAxesActivity=true;
             }
-            if (value < -3) {
+            if (value < -5) {
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = -1
-            }else if (value > 3){
+            }else if (value > 5){
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = 1
             }
@@ -107,17 +106,4 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
         this.context.GamepadModuleManager.tick(gamepadTickEvent);
     }
-    //TODO configurable tick
-    /**
-     * this is called by gamepadmodules and will create smooth ticks
-     * @param gamepad
-     * @param gamepadConfig
-     * @param position
-     */
-    public axesTick(gamepad:Gamepad, gamepadConfig: GamepadConfig,position: string):{x:number,y:number}{
-        //howToAlignAxis consecutive ticks should only appear with two axes aligned e.g. x,y
-        //it should not tick for another x,z
-        return {x:0,y:0}
-    }
-
 }

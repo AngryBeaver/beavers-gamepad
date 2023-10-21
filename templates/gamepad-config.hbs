@@ -64,11 +64,16 @@
             {{#each this.modules}}
                 <div class="flexcol"
                      style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
-                    <div style="font-weight:800;margin-bottom:20px" class="flexrow">
-                        <div>{{this.name}}</div>
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="font-weight:800;"><div>{{this.name}}</div></label>
+                        <div class="form-fields">
                         <a class="delete" style="flex:0" data-id="{{@../key}}" data-module="{{@key}}">
                             <i class="fas fa-trash"></i>
                         </a>
+                        </div>
+                        <p class="notes">
+                            {{localize this.desc}}
+                        </p>
                     </div>
                     {{#each this.binding.axes}}
                         <div class="flexrow">
@@ -79,6 +84,15 @@
                                     "beaversGamepad.gamepadConfigApp.reversedLabel"}}</div>
                             <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.reversed"
                                    type="checkbox" {{#if this.reversed}}checked{{/if}}/>
+                        </div>
+                    {{/each}}
+                    {{#each this.binding.buttons}}
+                        <div class="form-group">
+                            <label>{{@key}}</label>
+                        <div class="form-fields">
+                            <input type="number" name="{{@../../key}}.modules.{{@../key}}.binding.buttons.{{@key}}.index"
+                                   value="{{this.index}}"/>
+                        </div>
                         </div>
                     {{/each}}
                 </div>

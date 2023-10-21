@@ -155,9 +155,9 @@ export class GamepadSettings {
         return gamepadConfigs[gamepadIndex]
     }
     getGamepadIndexForUser(userId:string):string | undefined {
-        const gamepadIndexes = Object.entries(this.getGamepadConfigs()).filter(([k,v])=>{
+        const gamepadIndexes = Object.entries(this.getGamepadConfigs()).filter(([k,v])=>
             v.userId === userId
-        }).map(([k,v])=>k);
+        ).map(([k,v])=>k);
         if(gamepadIndexes[0]){
             return gamepadIndexes[0]
         }

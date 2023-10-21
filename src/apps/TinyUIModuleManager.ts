@@ -18,6 +18,20 @@ export class TinyUIModuleManager {
         uiModules:{},
     }
 
+    getInstance(userId: string):TinyUserInterface{
+        return this._data.instances[userId];
+    }
+    getUiModuleChoices(){
+        const choices = {};
+        Object.entries(this._data.uiModules).forEach(([moduleId,uiModule])=>{
+            choices[moduleId] = {text:uiModule.name}
+        });
+        return choices;
+    }
+    processUI(userId:string,moduleId:string){
+        return this._data.uiModules[moduleId].process(userId,this._data.instances[userId]);
+    }
+
     /**
      * this injects and updates uiModules into "the" TinyUserInterface.
      * if uiModuleInstance is nonexistent on the gamepad it creates an instance.

@@ -36,12 +36,20 @@ export class TinyUserInterfaceGamepadModule {
                     reversed: false
                 },
             },
-            buttons:{}
+            buttons:{
+                "ok":{
+                    index: "2"
+                },
+                "abort":{
+                    index: "1"
+                }
+            }
         },
         name: "Control TinyUserInterface",
         id:"beavers-tinyUI-control",
         // @ts-ignore
-        isContextModule:true
+        isContextModule:true,
+        desc: "beaversGamepad.TUIGamepadModule.desc"
     }
 
     public updateGamepadConfig(gamepadConfig: GamepadConfig){
@@ -51,22 +59,40 @@ export class TinyUserInterfaceGamepadModule {
         this._data.userPosition = userData.userPosition;
         this._data.userId = gamepadConfig.userId;
     }
+    public getConfig():GamepadModuleConfig{
+        return this._data.config;
+    }
 
     public tick(event: GamepadTickEvent):boolean{
-
         this._data.consecutiveTick ++;
-        if(!event.hasAnyAxesTicked){
-            return true;
+        if(event.hasAnyAxesTicked){
+            this.tickAxes(event);
         }
+        if(event.hasAnyButtonTicked){
+            this.tickButton(event);
+        }
+        return true;
+    }
 
+    private tickAxes(event: GamepadTickEvent){
         const axes = this.getAxes(event,this.X_AXES,this.Y_AXES,this._data.userPosition);
-        if(axes.y > 0){
+        if(axes.y != 0){
             if(this._data.consecutiveTick > 3){
-                game[NAMESPACE].TinyUIModuleManager.instances[this._data.userId].rotateWheel(axes.y)
+                game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).rotateWheel(axes.y)
                 this._data.consecutiveTick = 0;
             }
         }
-        return true;
+    }
+
+    private tickButton(event: GamepadTickEvent){
+        const okIndex = this._data.config.binding.buttons["ok"].index;
+        if(event.buttons[okIndex]){
+            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).ok();
+        }
+        const abortIndex = this._data.config.binding.buttons["abort"].index;
+        if(event.buttons[abortIndex]){
+            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).abbort();
+        }
     }
 
     private getAxes(event: GamepadTickEvent,xAxis:string,yAxis:string,userPosition:string):{x:number,y:number}{

@@ -7,6 +7,7 @@
  * */
 import {NAMESPACE} from "../main.js";
 import {GamepadSettings} from "../GamepadSettings.js";
+import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule.js";
 
 export class TinyUserInterface extends Application implements UserInput {
 
@@ -98,26 +99,19 @@ export class TinyUserInterface extends Application implements UserInput {
 
     public async select(selectData: SelectData):Promise<string> {
         const gamepadIndex = this._settings.getGamepadIndexForUser(this.userId);
+        const dfd = new Deferred<string>();
+        let promise = dfd.promise;
         if(gamepadIndex){
-            game[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,this.userId);
+            game[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,TinyUserInterfaceGamepadModule.defaultConfig.id);
+            promise = dfd.promise.then(x=>{
+                game[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
+                return x;
+            })
         }
         this._data.selectData = selectData
-        const dfd = new Deferred<string>();
         this._data.resolve = dfd.resolve;
         await this._render(true);
-        return dfd.promise;
-    }
-
-    _choose(id:string) {
-        if(this._data.resolve){
-            this._data.resolve(id);
-        }
-    }
-
-    async _reset() {
-        this._data.selectData = {choices:{}};
-        this._data.wheel = 0;
-        this._render(true);
+        return promise;
     }
 
     /**
@@ -130,6 +124,36 @@ export class TinyUserInterface extends Application implements UserInput {
         this._data.wheel = Math.min(length - 1, Math.max(0, this._data.wheel))
         const top = 7 - this._data.wheel * 21;
         this._data.html.find(".wheel").css({top: top});
+    }
+
+    /**
+     * may get called via gamepadmodule
+     */
+    public ok() {
+        const choice = Object.entries(this._data.selectData.choices)[this._data.wheel];
+        this._choose(choice[0])
+    }
+
+    /**
+     * may get called via gamepadmodule
+     */
+    public abbort() {
+        this._choose(null);
+    }
+
+    _choose(id:string | null) {
+        this._reset()
+            .then(x=>{
+                if(this._data.resolve){
+                    this._data.resolve(id)
+                }
+            });
+    }
+
+    async _reset() {
+        this._data.selectData = {choices:{}};
+        this._data.wheel = 0;
+        await this._render(true);
     }
 
 }
