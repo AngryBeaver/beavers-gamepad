@@ -5,7 +5,7 @@
  * each user instance can be dragged and rotated to position it.
  * the app needs to be very small. in place dropdown ?
  * */
-import {NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 import {GamepadSettings} from "../GamepadSettings.js";
 import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule.js";
 
@@ -19,6 +19,8 @@ export class TinyUserInterface extends Application implements UserInput {
         html: any,
     }
     _settings: GamepadSettings;
+    hook:number,
+
 
     constructor(userId: string, options: any = {}) {
         super(options);
@@ -34,6 +36,11 @@ export class TinyUserInterface extends Application implements UserInput {
             this.bringToTop();
         }
         this.setPosition({top:userData.top||0,left:userData.left||0});
+        this.hook = Hooks.on("updateUser", async function(user){
+            if(user.id === userId) {
+                this.render();
+            }
+        }.bind(this));
     }
 
     static get defaultOptions() {
@@ -51,6 +58,12 @@ export class TinyUserInterface extends Application implements UserInput {
             popOut: false,
             id: NAMESPACE
         });
+    }
+
+    close(options?: Application.CloseOptions): Promise<void> {
+        const result = super.close(options);
+        Hooks.off("updateUser",this.hook);
+        return result;
     }
 
     get userId(){
