@@ -41,26 +41,6 @@
                     {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
                 </p>
             </div>
-            <div class="form-group">
-                <label>{{localize "beaversGamepad.gamepadConfigApp.actorLabel"}}</label>
-                <div class="form-fields">
-                    <beavers-selection>
-                        <select name="{{@key}}.actorId">
-                            {{#select this.actorId}}
-                                <option selected disabled value=""></option>
-                                {{#each ../actors}}
-                                    <option value="{{this.uuid}}" img="{{this.img}}">
-                                        {{this.name}}
-                                    </option>
-                                {{/each}}
-                            {{/select}}
-                        </select>
-                    </beavers-selection>
-                </div>
-                <p class="notes">
-                    {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
-                </p>
-            </div>
             {{#each this.modules}}
                 <div class="flexcol"
                      style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">

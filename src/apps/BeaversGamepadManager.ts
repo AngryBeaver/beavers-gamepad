@@ -1,11 +1,10 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
-import {Context} from "../GamepadSettings.js";
 
 /**
- * here are physical gamepads registerd
+ * here are physical gamepads registered
  * it genereates a tick event for each gamepad that is sent to gamepadModuleManager.
  */
-export class BeaversGamepadManager implements BeaversGamepadManagerI{
+export class BeaversGamepadManager {
     gamepads: {
         [gamepadIndex: string]: {
             id: string
@@ -18,10 +17,8 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             }
         }
     } = {};
-    context: Context;
 
     constructor() {
-        this.context = game[NAMESPACE];
         window.addEventListener("gamepadconnected", (e) => {
             this._registerGamePad(e.gamepad)
         });
@@ -104,6 +101,6 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
-        this.context.GamepadModuleManager.tick(gamepadTickEvent);
+        (game as Game)[NAMESPACE].GamepadModuleManager.tick(gamepadTickEvent);
     }
 }

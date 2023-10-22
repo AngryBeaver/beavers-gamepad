@@ -1,11 +1,9 @@
 import {TinyUserInterface} from "./TinyUserInterface.js";
 import {NAMESPACE} from "../main.js";
-import {Context} from "../GamepadSettings.js";
 
-export class TinyUIModuleManager {
+export class TinyUIModuleManager implements TinyUIModuleManagerI{
 
     private _data:{
-        context: Context
         instances:{
             [userId:string]:TinyUserInterface
         },
@@ -13,7 +11,6 @@ export class TinyUIModuleManager {
             [moduleId:string]:UIModule
         }
     } = {
-        context: game[NAMESPACE],
         instances:{},
         uiModules:{},
     }
@@ -37,7 +34,7 @@ export class TinyUIModuleManager {
      * if uiModuleInstance is nonexistent on the gamepad it creates an instance.
      */
     updateUIModules(){
-        const uiData = this._data.context.Settings.getUIData();
+        const uiData = (game as Game)[NAMESPACE].Settings.getUIData();
         for(const [userId,userData] of Object.entries(uiData)){
             if(userData.enableUI){
                 if(this._data.instances[userId]){

@@ -1,5 +1,5 @@
-import {TinyUserInterface} from "./TinyUserInterface.js";
 import {GamepadSettings} from "../GamepadSettings.js";
+import {NAMESPACE} from "../main.js";
 
 export class CharacterSelectionUI implements UIModule {
     name = "beavers-character-selection"
@@ -17,7 +17,7 @@ export class CharacterSelectionUI implements UIModule {
         });
         const actorId = await userInput.select({choices: choices});
         if (actorId !== null && actorId !== "") {
-            const settings: GamepadSettings = game["beavers-gamepad"].Settings;
+            const settings: GamepadSettings = game[NAMESPACE].Settings;
             const gamepadIndex = settings.getGamepadIndexForUser(userId);
             const data = {};
             game["users"].get(userId).update({"character": actorId}).then(x => {

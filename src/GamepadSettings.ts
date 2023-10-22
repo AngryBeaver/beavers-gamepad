@@ -7,7 +7,7 @@ import {UIConfigApp} from "./apps/UIConfigApp.js";
 export const USER_UI: string = "user_ui";
 export const ACTOR_FILTER = "actor_filter";
 
-export class GamepadSettings {
+export class GamepadSettings implements GamepadSettingsI{
 
     private GAMEPAD_CONFIG = "gamepad_config";
     private GAMEPAD_CONFIG_BUTTON = "gamepad_config_button";
@@ -86,7 +86,7 @@ export class GamepadSettings {
         }
     }
 
-    public getUIData(): { [userId:string]:any } {
+    public getUIData(): { [userId:string]:UserData } {
         return this.get(USER_UI) || {}
     }
 
@@ -199,11 +199,4 @@ export class GamepadSettings {
             }
         )
     }
-}
-
-export interface Context {
-    GamepadManager: BeaversGamepadManagerI
-    GamepadModuleManager: GamepadModuleManagerInstance
-    GamepadConfigApp?: GamepadConfigAppI
-    Settings: GamepadSettings
 }

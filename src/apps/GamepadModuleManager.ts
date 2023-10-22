@@ -1,12 +1,10 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
-import {Context, GamepadSettings} from "../GamepadSettings.js";
 
 /**
  * gamepadmodule manager
  */
-export class GamepadModuleManager implements GamepadModuleManagerInstance {
+export class GamepadModuleManager implements GamepadModuleManagerI {
 
-    context: Context;
     registeredGamepadModuleInstances: {
         [gamepadIndex: string]: {
             [moduleId: string]: GamepadModuleInstance
@@ -20,8 +18,14 @@ export class GamepadModuleManager implements GamepadModuleManagerInstance {
     } = {}
 
     constructor() {
-        this.context = game[NAMESPACE];
         Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
+        Hooks.on("updateUser", async function(user){
+            const gamepadIndex = (game as Game)[NAMESPACE].Settings.getGamepadIndexForUser(user.id)
+            if(gamepadIndex){
+                this.updateGamepadModuleInstance()
+            }
+
+        }.bind(this));
     }
 
     /**
@@ -50,7 +54,7 @@ export class GamepadModuleManager implements GamepadModuleManagerInstance {
      * if gamepadmodule is non existant on the gamepad it creates an instance.
      */
     updateGamepadModuleInstance() {
-        const gamepadConfigs = this.context.Settings.getGamepadConfigs();
+        const gamepadConfigs = (game as Game)[NAMESPACE].Settings.getGamepadConfigs();
         for (const [gamepadIndex, gamepadConfig] of Object.entries(gamepadConfigs)) {
             for (const [moduleId, moduleConfig] of Object.entries(gamepadConfig.modules)) {
                 let gamepadModuleInstance = this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId);

@@ -1,4 +1,14 @@
 # 1.0.x Initial release
+## 1.1.0
+- TODO class rename
+- TODO (a) (b) button nameing
+- TODO align to bot top left right
+- TODO size
+- TODO highlight ?
+- TODO move types
+- TODO release as npm
+- TODO docu
+
 ## 1.0.3
 - move beavers-token-movement to beaversSystemInterface module (in order to share movement with beavers-mobile module)
 - improve movement-tick (increase initial tick delay to prevent initial double movement)

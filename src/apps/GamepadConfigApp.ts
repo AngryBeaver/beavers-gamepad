@@ -1,23 +1,20 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
-import {ACTOR_FILTER, Context} from "../GamepadSettings.js";
+import {ACTOR_FILTER} from "../GamepadSettings.js";
 
 /**
  * this is the configuration module that allows to add and delete and configure gamepadmodules
  */
-export class GamepadConfigApp extends FormApplication<any,any,any> implements GamepadConfigAppI {
+export class GamepadConfigApp extends FormApplication<any,any,any> {
 
 
     gamepadModules: {
         [key:string]:GamepadModule
     }
-    context: Context;
     gamepadConfigs: GamepadConfigs;
     hook:number;
 
     constructor(){
         super();
-        this.context = game[NAMESPACE];
-        this.context.GamepadConfigApp = this;
         this.hook = Hooks.on(HOOK_GAMEPAD_CONNECTED, async function(){
             this.render();
         }.bind(this));
@@ -30,15 +27,15 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         const title = game.i18n.localize("beaversGamepad.gamepadConfigApp.title");
         return mergeObject(super.defaultOptions, {
             title: title,
-            template: "modules/beavers-gamepad/templates/gamepad-config.hbs",
-            id: "beavers-gamepad-config",
+            template: `modules/${NAMESPACE}/templates/gamepad-config.hbs`,
+            id: NAMESPACE+"-config",
             width: 600,
             height: 600,
             resizable:false,
             submitOnChange:true,
             submitOnClose:true,
             closeOnSubmit:false,
-            classes:  ["beavers-gamepad","gamepad-config"]
+            classes:  [NAMESPACE,"gamepad-config"]
         })
     }
 
@@ -46,10 +43,10 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         if (!(game instanceof Game)) {
             throw new Error("Settings called before game has been initialized");
         }
-        const filter = this.context.Settings.get(ACTOR_FILTER);
+        const filter = game[NAMESPACE].Settings.get(ACTOR_FILTER);
         const actors = game.actors?.filter(a=>a.type===filter)||[];
-        this.gamepadModules = this.context.GamepadModuleManager.getGamepadModules();
-        this.gamepadConfigs = this.context.Settings.getGamepadConfigs();
+        this.gamepadModules = game[NAMESPACE].GamepadModuleManager.getGamepadModules();
+        this.gamepadConfigs = game[NAMESPACE].Settings.getGamepadConfigs();
         return {
             users:game.users?.contents.reduce((a, v) => ({ ...a, [v.id]: v}), {}) || {},
             hasGamepadConfigs: Object.values(this.gamepadConfigs).length>0,
@@ -67,7 +64,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         html.find('.delete').on("click",e=>{
             const id = $(e.currentTarget).data("id");
             const moduleId = $(e.currentTarget).data("module");
-            this.context.Settings.deleteGamepadConfig(id,moduleId).then(
+            (game as Game)[NAMESPACE].Settings.deleteGamepadConfig(id,moduleId).then(
                 ()=>{
                     this.render()
                 }
@@ -82,7 +79,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
             const id = $(e.currentTarget).data("id");
             const data = {}
             data[id+'.userId'] = "";
-            this.context.Settings.updateGamepadConfigs(data).then(()=>{
+            (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(data).then(()=>{
                 this.render()
             });
         });
@@ -91,7 +88,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
 
     protected _updateObject(event: Event, formData: object | undefined): Promise<unknown> {
         if(formData != undefined) {
-            return this.context.Settings.updateGamepadConfigs(formData as GamepadConfigs)
+            return (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(formData as GamepadConfigs)
         }
         return Promise.resolve("");
     }
@@ -108,7 +105,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         const selectedId = await beaversSystemInterface.uiDialogSelect(selectData);
         const data = {}
         data[gamepadIndex+'.modules.'+selectedId] = this.gamepadModules[selectedId].defaultConfig;
-        this.context.Settings.updateGamepadConfigs(data).then(()=>{
+        (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(data).then(()=>{
             this.render()
         });
     }
@@ -130,7 +127,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
         if(userId) {
             const data = {}
             data[gamepadIndex+'.userId'] = userId;
-            this.context.Settings.updateGamepadConfigs(data).then(()=>{
+            (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(data).then(()=>{
                 this.render()
             });
         }
@@ -139,7 +136,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> implements Ga
 
     close(options?: FormApplication.CloseOptions): Promise<void>{
         const result = super.close(options);
-        this.context.GamepadModuleManager.updateGamepadModuleInstance();
+        (game as Game)[NAMESPACE].GamepadModuleManager.updateGamepadModuleInstance();
         Hooks.off(HOOK_GAMEPAD_CONNECTED,this.hook);
         return result
     }

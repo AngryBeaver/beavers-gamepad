@@ -1,5 +1,4 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
-import {Context} from "../GamepadSettings.js";
 
 /**
  * this is the configuration module that allows to add and delete and configure gamepadmodules
@@ -9,7 +8,6 @@ export class UIConfigApp extends FormApplication<any,any,any> {
     gamepadModules: {
         [key:string]:GamepadModule
     }
-    context: Context = game[NAMESPACE];
     gamepadConfigs: GamepadConfigs;
     hook:number;
 
@@ -27,14 +25,14 @@ export class UIConfigApp extends FormApplication<any,any,any> {
         const title = game.i18n.localize("beaversGamepad.uiConfigApp.title");
         return mergeObject(super.defaultOptions, {
             title: title,
-            template: "modules/beavers-gamepad/templates/ui-config.hbs",
-            id: "ui-config",
+            template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
+            id: NAMESPACE+"ui-config",
             width: 600,
             height: 600,
             resizable:true,
             submitOnChange:false,
             submitOnClose:true,
-            classes:  ["beavers-gamepad","ui-config"]
+            classes:  [NAMESPACE,"ui-config"]
         })
     }
 
@@ -46,7 +44,7 @@ export class UIConfigApp extends FormApplication<any,any,any> {
 
         return {
             users: game.users?.contents.reduce((a, v) => ({ ...a, [v.id]: v}), {}) || {},
-            uiData: this.context.Settings.getUIData(),
+            uiData: (game as Game)[NAMESPACE].Settings.getUIData(),
         }
     }
 
@@ -59,7 +57,7 @@ export class UIConfigApp extends FormApplication<any,any,any> {
             const formData = new FormData($(e.currentTarget).parents("form")[0]);
             const userId = formData.get("addUser") as string;
             if(userId) {
-                this.context.Settings.setUserData(userId, {}).then(
+                (game as Game)[NAMESPACE].Settings.setUserData(userId, {}).then(
                     ()=>{
                         this.render()
                     });
@@ -67,7 +65,7 @@ export class UIConfigApp extends FormApplication<any,any,any> {
         });
         html.find('.removeUser').on("click",e=>{
             const id = $(e.currentTarget).data("id");
-            this.context.Settings.removeUserData(id).then(
+            (game as Game)[NAMESPACE].Settings.removeUserData(id).then(
                 ()=>{
                     this.render()
                 }
@@ -82,7 +80,7 @@ export class UIConfigApp extends FormApplication<any,any,any> {
             for (const [attribute, value] of Object.entries(formData)) {
                 setProperty(uiData, attribute, value);
             }
-            this.context.Settings.setUIData(uiData as UIData,{updateUI:true})
+            (game as Game)[NAMESPACE].Settings.setUIData(uiData as UIData,{updateUI:true})
         }
     }
 

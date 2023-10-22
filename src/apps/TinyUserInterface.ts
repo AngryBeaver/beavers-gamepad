@@ -1,15 +1,15 @@
 /**
  * Will paint a display with an actor and current activities as dropdown
- * needs to be position absolute so we can have multiple instances of that for shared screen.
+ * needs to be position absolute, so we can have multiple instances of that for shared screen.
  * Each user can have one instance it need not be the user of the client.
  * each user instance can be dragged and rotated to position it.
  * the app needs to be very small. in place dropdown ?
  * */
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
+import {NAMESPACE} from "../main.js";
 import {GamepadSettings} from "../GamepadSettings.js";
 import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule.js";
 
-export class TinyUserInterface extends Application implements UserInput {
+export class TinyUserInterface extends Application implements TinyUserInterfaceI {
 
     _data: {
         userId: string,
@@ -19,7 +19,7 @@ export class TinyUserInterface extends Application implements UserInput {
         html: any,
     }
     _settings: GamepadSettings;
-    hook:number,
+    hook:number
 
 
     constructor(userId: string, options: any = {}) {
@@ -142,20 +142,20 @@ export class TinyUserInterface extends Application implements UserInput {
     /**
      * may get called via gamepadmodule
      */
-    public ok() {
+    public async ok() {
         const choice = Object.entries(this._data.selectData.choices)[this._data.wheel];
-        this._choose(choice[0])
+        return this._choose(choice[0])
     }
 
     /**
      * may get called via gamepadmodule
      */
-    public abbort() {
-        this._choose(null);
+    public async abort() {
+        return this._choose(null);
     }
 
     _choose(id:string | null) {
-        this._reset()
+        return this._reset()
             .then(x=>{
                 if(this._data.resolve){
                     this._data.resolve(id)
@@ -166,7 +166,7 @@ export class TinyUserInterface extends Application implements UserInput {
     async _reset() {
         this._data.selectData = {choices:{}};
         this._data.wheel = 0;
-        await this._render(true);
+        return this._render(true);
     }
 
 }
