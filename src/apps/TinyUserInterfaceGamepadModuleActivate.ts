@@ -23,7 +23,8 @@ export class TinyUserInterfaceGamepadModuleActivate {
             },
             buttons:{
                 "activate":{
-                    index: "2"
+                    index: "2",
+                    label: "activate :"
                 },
             }
         },

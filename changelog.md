@@ -1,14 +1,20 @@
-# 1.0.x Initial release
-## 1.1.0
-- TODO class rename
-- TODO (a) (b) button nameing
+# 1.0.x Context Modules
+## 1.1.0 Tiny User Interface
+- feature Concept for Context Modules (modules that disable gamepad and enable control of a context window)
+- add TinyUserInterface Context Module
+- feature Concept UserInterface Modules
+- add UserInterfaceModule beavers character selection
+- breaking change: gamepads are no longer bound to actor they are bound to users see docu
+- feature Gamepad becomes npm module to import types
+- add client specific user settings
+  -  in vtt a user is most often also a client. however in a local setup you connect to one client belonging to a central user.
+
 - TODO align to bot top left right
-- TODO size
-- TODO highlight ?
-- TODO move types
+- TODO initial select
 - TODO release as npm
 - TODO docu
 
+# 1.0.x Initial release
 ## 1.0.3
 - move beavers-token-movement to beaversSystemInterface module (in order to share movement with beavers-mobile module)
 - improve movement-tick (increase initial tick delay to prevent initial double movement)

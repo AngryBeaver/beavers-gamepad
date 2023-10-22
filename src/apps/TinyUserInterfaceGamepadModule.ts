@@ -38,10 +38,12 @@ export class TinyUserInterfaceGamepadModule {
             },
             buttons:{
                 "ok":{
-                    index: "2"
+                    index: "2",
+                    label:"(A) ok:"
                 },
                 "abort":{
-                    index: "1"
+                    index: "1",
+                    label:"(B) abort:"
                 }
             }
         },
@@ -91,7 +93,7 @@ export class TinyUserInterfaceGamepadModule {
         }
         const abortIndex = this._data.config.binding.buttons["abort"].index;
         if(event.buttons[abortIndex]){
-            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).abbort();
+            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).abort();
         }
     }
 

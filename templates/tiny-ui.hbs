@@ -1,5 +1,7 @@
 <div class="beavers-tiny-ui app flexrow"
-     style="transform:rotate({{transform}});position:absolute;overflow:hidden; padding:0px 0px; height:50px; width:210px; top:{{userData.top}}px; left:{{userData.left}}px; border: 1px solid var(--color-border-dark);">
+     style="transform:rotate({{transform}});position:absolute;overflow:hidden; padding:0px 0px; height:50px; width:210px; top:{{userData.top}}px; left:{{userData.left}}px; border: 1px solid var(--color-border-dark);
+             {{#if glow}}box-shadow: 0 0 30px 5px {{user.color}};{{/if}}
+             ">
     <div class="drag-me"
          style="flex:12px 0;border-right:1px solid black;margin-right:2px;cursor: move;background-color:{{user.color}}"></div>
     {{#if (eq (beavers-objectLen choices) 0)}}
@@ -19,7 +21,7 @@
     {{#if (gt (beavers-objectLen choices) 1)}}
         <div class="flexrow" style="margin:auto">
             <div class="selection" style="position:relative">
-                <div style="overflow:hidden; height:34px; width: 140px; margin-right:2px;">
+                <div style="overflow:hidden; height:34px; margin-right:2px;">
                     <div style="position:relative;height:34px;background-color:#e0e0e0;color:#191813">
                         <div class="wheel"
                              style="position:relative;top:7px;line-height:20px;height:20px;transition: top 1s;">
@@ -30,11 +32,11 @@
                             <div style="border-top:1px solid grey"></div>
                         </div>
                     </div>
-                    <div style="pointer-events: none;width:140px;top:0px;position:absolute; height:34px; background:linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.8) 100%);">
+                    <div style="pointer-events: none;width:100%;top:0px;position:absolute; height:34px; background:linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.8) 100%);">
                     </div>
                 </div>
             </div>
-            <div class="flexcol">
+            <div class="flexcol" style="flex:0">
                 <a class="up">
                     <i class="fas fa-angle-up"></i>
                 </a>

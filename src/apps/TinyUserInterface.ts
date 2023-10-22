@@ -17,6 +17,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         selectData: SelectData,
         resolve?:(any)=>void,
         html: any,
+        glow:boolean,
     }
     _settings: GamepadSettings;
     hook:number
@@ -30,6 +31,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
             wheel: 0,
             selectData: {choices:{}},
             html: null,
+            glow:false,
         };
         const userData = this._settings.getUserData(userId);
         if (this.element.length > 0) {
@@ -77,6 +79,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
             userData: userData,
             user: game["users"].get(this._data.userId),
             choices: this._data.selectData.choices,
+            glow: this._data.glow
         }
     }
 
@@ -116,9 +119,11 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         let promise = dfd.promise;
         if(gamepadIndex){
             game[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,TinyUserInterfaceGamepadModule.defaultConfig.id);
+            this._data.glow = true;
             promise = dfd.promise.then(x=>{
+                this._data.glow = false;
                 game[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
-                return x;
+                return this._render(true).then(y=>x);
             })
         }
         this._data.selectData = selectData

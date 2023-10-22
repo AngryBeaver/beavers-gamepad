@@ -68,7 +68,7 @@
                     {{/each}}
                     {{#each this.binding.buttons}}
                         <div class="form-group">
-                            <label>{{@key}}</label>
+                            <label>{{this.label}}</label>
                         <div class="form-fields">
                             <input type="number" name="{{@../../key}}.modules.{{@../key}}.binding.buttons.{{@key}}.index"
                                    value="{{this.index}}"/>

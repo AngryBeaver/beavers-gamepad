@@ -42,6 +42,7 @@ interface GamepadModuleConfigBinding {
     buttons:{
         [name:string]:{
             index:string
+            label:string
         }
     }
 }
