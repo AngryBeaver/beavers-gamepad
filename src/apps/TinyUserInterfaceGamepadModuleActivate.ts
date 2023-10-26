@@ -28,7 +28,7 @@ export class TinyUserInterfaceGamepadModuleActivate {
                 },
             }
         },
-        name: "Activate TinyUserInterface",
+        name: "Tiny-User-Interface Activation",
         id:"beavers-tinyUI-activate",
         // @ts-ignore
         desc: "beaversGamepad.TUIGamepadModule.desc2"

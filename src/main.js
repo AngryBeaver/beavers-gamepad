@@ -11,12 +11,11 @@ import {CharacterSelectionUI} from "./apps/CharacterSelectionUI.js";
 export const NAMESPACE = "beavers-gamepad"
 export const HOOK_READY = NAMESPACE+".ready";
 export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
+export const SOCKET_UPDATE_USER = "updateUser";
 
 Hooks.on("ready", async function(){
     setTimeout(()=>{
-        if(!game[NAMESPACE]){
-            game[NAMESPACE]={};
-        }
+        game[NAMESPACE]=game[NAMESPACE]||{};
         game[NAMESPACE].GamepadManager = new BeaversGamepadManager();
         game[NAMESPACE].GamepadModuleManager = new GamepadModuleManager();
         game[NAMESPACE].TinyUIModuleManager = new TinyUIModuleManager();
@@ -32,8 +31,15 @@ Hooks.on("ready", async function(){
         game[NAMESPACE].TinyUIModuleManager.addModule(ui.name,ui);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
-
+        game[NAMESPACE].socket.register(SOCKET_UPDATE_USER, (userId,data)=>{
+            return game["users"].get(userId).update(data);
+        });
     },1000);
+});
+
+Hooks.once("socketlib.ready", () => {
+    game[NAMESPACE]=game[NAMESPACE]||{};
+    game[NAMESPACE].socket = socketlib.registerModule(NAMESPACE);
 });
 
 Handlebars.registerHelper("beavers-objectLen", function(json) {

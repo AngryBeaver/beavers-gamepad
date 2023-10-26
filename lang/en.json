@@ -41,8 +41,8 @@
       "addUserHint": ""
     },
     "TUIGamepadModule": {
-      "desc": "This is a context module. When activated it controls the tiny user interface",
-      "desc2": "This module activates tinyUserInterface"
+      "desc": "This is a context module. When activated it controls the Tiny-User-Interface",
+      "desc2": "This module activates Tiny-User-Interface"
     }
   }
 }

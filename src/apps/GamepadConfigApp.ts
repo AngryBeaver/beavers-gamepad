@@ -99,7 +99,7 @@ export class GamepadConfigApp extends FormApplication<any,any,any> {
         }
         for(const [moduleId,gamepadModule] of Object.entries(this.gamepadModules)){
             if(!this.gamepadConfigs[gamepadIndex].modules[moduleId]) {
-                selectData.choices[moduleId] = {text: gamepadModule.name};
+                selectData.choices[moduleId] = {text: gamepadModule.defaultConfig.name};
             }
         }
         const selectedId = await beaversSystemInterface.uiDialogSelect(selectData);

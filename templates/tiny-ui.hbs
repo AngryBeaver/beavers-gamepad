@@ -26,8 +26,10 @@
                         <div class="wheel"
                              style="position:relative;top:7px;line-height:20px;height:20px;transition: top 1s;">
                             {{#each choices}}
-                                <button class="select" type="submit" style="margin:1px 0px;line-height:15px"
-                                        data-key="{{@key}}">{{this.text}}</button>
+                                <button class="select flexrow" type="submit" style="margin:1px 0px;line-height:15px"
+                                        data-key="{{@key}}">
+                                    <img style="flex:0;border:0px;background-color:#555;margin-right:2px;" height="15px" src="{{this.img}}"/>
+                                    {{this.text}}</button>
                             {{/each}}
                             <div style="border-top:1px solid grey"></div>
                         </div>

@@ -47,7 +47,7 @@ export class TinyUserInterfaceGamepadModule {
                 }
             }
         },
-        name: "Control TinyUserInterface",
+        name: "Tiny-User-Interface Control",
         id:"beavers-tinyUI-control",
         // @ts-ignore
         isContextModule:true,

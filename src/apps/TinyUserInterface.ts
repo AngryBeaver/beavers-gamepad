@@ -110,7 +110,12 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
                     this._settings.setUserData(this._data.userId,x)
                 });
         });
-
+        Object.entries(this._data.selectData.choices).forEach(([key,value],index)=>{
+            if(key === this._data.selectData.selected){
+                this._data.wheel = index;
+                this.rotateWheel(0);
+            }
+       })
     }
 
     public async select(selectData: SelectData):Promise<string> {

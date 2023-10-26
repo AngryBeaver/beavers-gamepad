@@ -1,5 +1,4 @@
-import {GamepadSettings} from "../GamepadSettings.js";
-import {NAMESPACE} from "../main.js";
+import {NAMESPACE, SOCKET_UPDATE_USER} from "../main.js";
 
 export class CharacterSelectionUI implements UIModule {
     name = "beavers-character-selection"
@@ -15,12 +14,10 @@ export class CharacterSelectionUI implements UIModule {
         }).forEach(a => {
             choices[a.id] = {text: a.name, img: a.img}
         });
-        const actorId = await userInput.select({choices: choices});
+        const selected = game["users"].get(userId).character?.id
+        const actorId = await userInput.select({choices: choices,selected:selected});
         if (actorId !== null && actorId !== "") {
-            const settings: GamepadSettings = game[NAMESPACE].Settings;
-            const gamepadIndex = settings.getGamepadIndexForUser(userId);
-            const data = {};
-            game["users"].get(userId).update({"character": actorId}).then(x => {
+            game[NAMESPACE].socket.executeAsGM(SOCKET_UPDATE_USER,userId,{"character": actorId}).then(x => {
                 if (game["users"].current.id === userId && canvas instanceof Canvas) {
                     const token: any | undefined = canvas.tokens?.objects?.children.find(token => game["users"].current.character.id === token["actor"]?.id);
                     if (token) {
@@ -28,8 +25,6 @@ export class CharacterSelectionUI implements UIModule {
                     }
                 }
             });
-            data[`${gamepadIndex}.actorId`] = "Actor." + actorId;
-            settings.updateGamepadConfigs(data);
         }
     }
 
