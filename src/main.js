@@ -1,26 +1,48 @@
 import {BeaversGamepadManager} from "./apps/BeaversGamepadManager.js";
-import {Settings} from "./Settings.js";
+import {GamepadSettings} from "./GamepadSettings.js";
 import {DND5e} from "./systems/DND5e.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
+import {TinyUIModuleManager} from "./apps/TinyUIModuleManager.js";
+import {TinyUserInterfaceGamepadModule} from "./apps/TinyUserInterfaceGamepadModule.js";
+import {TinyUserInterfaceGamepadModuleActivate} from "./apps/TinyUserInterfaceGamepadModuleActivate.js";
+import {CharacterSelectionUI} from "./apps/CharacterSelectionUI.js";
 
 
 export const NAMESPACE = "beavers-gamepad"
 export const HOOK_READY = NAMESPACE+".ready";
 export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
+export const SOCKET_UPDATE_USER = "updateUser";
 
 Hooks.on("ready", async function(){
     setTimeout(()=>{
-        if(!game[NAMESPACE]){
-            game[NAMESPACE]={};
-        }
+        game[NAMESPACE]=game[NAMESPACE]||{};
         game[NAMESPACE].GamepadManager = new BeaversGamepadManager();
         game[NAMESPACE].GamepadModuleManager = new GamepadModuleManager();
-        game[NAMESPACE].Settings = new Settings();
+        game[NAMESPACE].TinyUIModuleManager = new TinyUIModuleManager();
+        game[NAMESPACE].Settings = new GamepadSettings();
+
         if(game['system'].id === 'dnd5e'){
             new DND5e();
         }
         Hooks.call(HOOK_READY, game[NAMESPACE].GamepadModuleManager);
         game[NAMESPACE].GamepadModuleManager.updateGamepadModuleInstance();
-
+        game[NAMESPACE].TinyUIModuleManager.updateUIModules();
+        const ui = new CharacterSelectionUI();
+        game[NAMESPACE].TinyUIModuleManager.addModule(ui.name,ui);
+        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
+        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
+        game[NAMESPACE].socket.register(SOCKET_UPDATE_USER, (userId,data)=>{
+            return game["users"].get(userId).update(data);
+        });
     },1000);
-})
+});
+
+Hooks.once("socketlib.ready", () => {
+    game[NAMESPACE]=game[NAMESPACE]||{};
+    game[NAMESPACE].socket = socketlib.registerModule(NAMESPACE);
+});
+
+Handlebars.registerHelper("beavers-objectLen", function(json) {
+    return Object.keys(json).length;
+});
+

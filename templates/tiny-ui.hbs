@@ -1,0 +1,57 @@
+<div class="beavers-tiny-ui app flexrow"
+     style="transform:rotate({{transform}});position:absolute;overflow:hidden; padding:0px 0px; height:50px; width:210px; top:{{userData.top}}px; left:{{userData.left}}px; border: 1px solid var(--color-border-dark);
+             {{#if glow}}box-shadow: 0 0 30px 5px {{user.color}};{{/if}}
+             ">
+    <div class="drag-me"
+         style="flex:12px 0;border-right:1px solid black;margin-right:2px;cursor: move;background-color:{{user.color}}"></div>
+    {{#if (eq (beavers-objectLen choices) 0)}}
+        <div class="flexcol">
+            <div class="flexrow" style="line-height:20px;font-weight:800;color:grey">
+                <img style="flex:0;border:0px;margin-top:2px;" height="18px" src="{{user.avatar}}"/>
+                {{user.name}}
+            </div>
+            <div style="felx:0;border-bottom:1px solid black;margin-bottom:5px">
+            </div>
+            <div class="flexrow" style="margin:auto">
+                <img style="flex:0;border:0px" height="20px" src="{{user.character.img}}"/>
+                {{user.character.name}}
+            </div>
+        </div>
+    {{/if}}
+    {{#if (gt (beavers-objectLen choices) 1)}}
+        <div class="flexrow" style="margin:auto">
+            <div class="selection" style="position:relative">
+                <div style="overflow:hidden; height:34px; margin-right:2px;">
+                    <div style="position:relative;height:34px;background-color:#e0e0e0;color:#191813">
+                        <div class="wheel"
+                             style="position:relative;top:7px;line-height:20px;height:20px;transition: top 1s;">
+                            {{#each choices}}
+                                <button class="select flexrow" type="submit" style="margin:1px 0px;line-height:15px"
+                                        data-key="{{@key}}">
+                                    <img style="flex:0;border:0px;background-color:#555;margin-right:2px;" height="15px" src="{{this.img}}"/>
+                                    {{this.text}}</button>
+                            {{/each}}
+                            <div style="border-top:1px solid grey"></div>
+                        </div>
+                    </div>
+                    <div style="pointer-events: none;width:100%;top:0px;position:absolute; height:34px; background:linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.8) 100%);">
+                    </div>
+                </div>
+            </div>
+            <div class="flexcol" style="flex:0">
+                <a class="up">
+                    <i class="fas fa-angle-up"></i>
+                </a>
+                <a class="down">
+                    <i class="fas fa-angle-down"></i>
+                </a>
+            </div>
+        </div>
+    {{/if}}
+    {{#if (eq (beavers-objectLen choices) 1)}}
+        {{#each choices}}
+            <button class="select" type="submit" style="margin:auto;line-height:15px"
+                    data-key="{{@key}}">{{this.text}}</button>
+        {{/each}}
+    {{/if}}
+</div>

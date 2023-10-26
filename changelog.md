@@ -1,3 +1,14 @@
+# 2.0.x Context Modules
+## 2.0.0 Tiny User Interface
+- ⚠ breaking change: gamepads are no longer bound to actor they are bound to users see docu
+- feature Concept for Context Modules (modules that disable gamepad and enable control of a context ui)
+  - TinyUserInterface Context Module
+- feature: Concept UI-Modules
+  - UI-Module "beavers character selection"
+- feature: Gamepad becomes npm module to import types
+- feature client specific user settings
+  -  in vtt a user is most often also a client. however in a local setup you connect to one client belonging to a central user.
+
 # 1.0.x Initial release
 ## 1.0.3
 - move beavers-token-movement to beaversSystemInterface module (in order to share movement with beavers-mobile module)

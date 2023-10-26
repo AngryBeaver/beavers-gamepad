@@ -1,22 +1,24 @@
 import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
 
-export class BeaversGamepadManager implements BeaversGamepadManagerI{
+/**
+ * here are physical gamepads registered
+ * it genereates a tick event for each gamepad that is sent to gamepadModuleManager.
+ */
+export class BeaversGamepadManager {
     gamepads: {
         [gamepadIndex: string]: {
             id: string
             button: {
                 [buttonIndex: string]: number
-            };
+            },
             count:{
                 buttons: number,
                 axes: number
             }
         }
     } = {};
-    context: Context;
 
     constructor() {
-        this.context = game[NAMESPACE];
         window.addEventListener("gamepadconnected", (e) => {
             this._registerGamePad(e.gamepad)
         });
@@ -40,7 +42,6 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _registerGamePad(gamepad: Gamepad) {
-        console.log("GamePad registered");
         this.gamepads[gamepad.index] = {button: {}, id:gamepad.id, count:{buttons:gamepad.buttons.length,axes:gamepad.axes.length}}
         Hooks.call(HOOK_GAMEPAD_CONNECTED);
     }
@@ -89,10 +90,10 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
             if (value < -1 || value > 1){
                 gamepadTickEvent.hasAnyAxesActivity=true;
             }
-            if (value < -3) {
+            if (value < -5) {
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = -1
-            }else if (value > 3){
+            }else if (value > 5){
                 gamepadTickEvent.hasAnyAxesTicked = true;
                 gamepadTickEvent.axes[index] = 1
             }
@@ -100,7 +101,6 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI{
     }
 
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
-        this.context.GamepadModuleManager.tick(gamepadTickEvent);
+        (game as Game)[NAMESPACE].GamepadModuleManager.tick(gamepadTickEvent);
     }
-
 }

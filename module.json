@@ -1,49 +1,62 @@
 {
-    "title": "Beaver's Gamepad",
-    "description": "For controlling actors while playing locally on a central map monitor",
-    "id": "beavers-gamepad",
-    "version": "1.0.3",
-    "authors": [
-      {
-        "name": "angryBeaver",
-        "url": "https://github.com/angrybeaver"
-      }
-    ],
-    "languages": [
-      {
-        "lang": "en",
-        "name": "English",
-        "path": "lang/en.json"
-      }
-    ],
-    "esmodules": [
-      "src/main.js"
-    ],
-    "styles": [
-
-    ],
-    "packs": [
-    ],
-    "url": "https://github.com/AngryBeaver/beavers-gamepad",
-    "manifest": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/module.json",
-    "download": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/beavers-gamepad.zip",
-    "relationships": {
-      "systems": [
-      ],
-      "requires": [
-        {
-          "id": "beavers-system-interface",
-          "type": "module",
-          "manifest": "https://github.com/AngryBeaver/beavers-system-interface/releases/latest/download/module.json",
-          "compatibility": {
-            "minimum" : "2.1.4",
-            "verified": "2.1.4"
-          }
-        }
-      ]
-    },
-    "compatibility": {
-      "minimum": "10",
-      "verified": "11"
+  "title": "Beaver's Gamepad",
+  "description": "For controlling actors while playing locally on a central map monitor",
+  "id": "beavers-gamepad",
+  "version": "2.0.0",
+  "socket": true,
+  "authors": [
+    {
+      "name": "angryBeaver",
+      "url": "https://github.com/angrybeaver"
     }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "esmodules": [
+    "src/main.js"
+  ],
+  "styles": [
+    "css/gamepad.css"
+  ],
+  "packs": [
+  ],
+  "url": "https://github.com/AngryBeaver/beavers-gamepad",
+  "manifest": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/module.json",
+  "download": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/beavers-gamepad.zip",
+  "relationships": {
+    "systems": [
+    ],
+    "requires": [
+      {
+        "id": "beavers-system-interface",
+        "type": "module",
+        "manifest": "https://github.com/AngryBeaver/beavers-system-interface/releases/latest/download/module.json",
+        "compatibility": {
+          "minimum": "2.1.5",
+          "verified": "2.1.5"
+        }
+      },
+      {
+        "id": "socketlib",
+        "type": "module",
+        "compatibility": {
+          "verified": "1.0.13"
+        }
+      }
+    ],
+    "recommends": [
+      {
+        "id": "monks-common-display"
+      }
+    ]
+  },
+  "compatibility": {
+    "minimum": "10",
+    "verified": "11"
   }
+}
