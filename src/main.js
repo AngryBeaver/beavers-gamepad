@@ -3,9 +3,10 @@ import {GamepadSettings} from "./GamepadSettings.js";
 import {DND5e} from "./systems/DND5e.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {TinyUIModuleManager} from "./apps/TinyUIModuleManager.js";
-import {TinyUserInterfaceGamepadModule} from "./apps/TinyUserInterfaceGamepadModule.js";
-import {TinyUserInterfaceGamepadModuleActivate} from "./apps/TinyUserInterfaceGamepadModuleActivate.js";
+import {TinyUserInterfaceGamepadModule} from "./modules/TinyUserInterfaceGamepadModule.js";
+import {TinyUserInterfaceGamepadModuleActivate} from "./modules/TinyUserInterfaceGamepadModuleActivate.js";
 import {CharacterSelectionUI} from "./apps/CharacterSelectionUI.js";
+import {TokenRotation} from "./modules/TokenRotation.js";
 
 
 export const NAMESPACE = "beavers-gamepad"
@@ -31,6 +32,7 @@ Hooks.on("ready", async function(){
         game[NAMESPACE].TinyUIModuleManager.addModule(ui.name,ui);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
+        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TokenRotation);
         game[NAMESPACE].socket.register(SOCKET_UPDATE_USER, (userId,data)=>{
             return game["users"].get(userId).update(data);
         });

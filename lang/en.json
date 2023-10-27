@@ -43,6 +43,9 @@
     "TUIGamepadModule": {
       "desc": "This is a context module. When activated it controls the Tiny-User-Interface",
       "desc2": "This module activates Tiny-User-Interface"
+    },
+    "TokenRotation": {
+      "desc": "this module allows to control the direction your token is facing"
     }
   }
 }

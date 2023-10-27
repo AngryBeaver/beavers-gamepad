@@ -1,4 +1,7 @@
 # 2.0.x Context Modules
+## 2.1.0 Token Rotation Module
+- feature: token rotation module
+- fix default config for standard mapped gamepads
 ## 2.0.0 Tiny User Interface
 - ⚠ breaking change: gamepads are no longer bound to actor they are bound to users see docu
 - feature Concept for Context Modules (modules that disable gamepad and enable control of a context ui)

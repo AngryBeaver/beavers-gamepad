@@ -7,7 +7,7 @@
  * */
 import {NAMESPACE} from "../main.js";
 import {GamepadSettings} from "../GamepadSettings.js";
-import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule.js";
+import {TinyUserInterfaceGamepadModule} from "../modules/TinyUserInterfaceGamepadModule.js";
 
 export class TinyUserInterface extends Application implements TinyUserInterfaceI {
 
