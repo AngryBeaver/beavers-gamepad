@@ -133,3 +133,6 @@ This module depends on the browsers ability to detect gamepads, i can not do muc
 
 ## Extensions
 You can write own GamepadModules or TinyUiModules. There will be a section on how to do this as soon as the interfaces are more established. Currently everything might still be in the flow.
+
+## Test your gamepad
+https://3960.org/sandbox/gamepad-test.html

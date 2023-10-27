@@ -1,5 +1,4 @@
 import {NAMESPACE} from "../main.js";
-import {TinyUIModuleManager} from "./TinyUIModuleManager";
 
 function staticImplements<T>() {
     return <U extends T>(constructor: U) => {constructor};
@@ -23,14 +22,13 @@ export class TinyUserInterfaceGamepadModuleActivate {
             },
             buttons:{
                 "activate":{
-                    index: "2",
+                    index: "0",
                     label: "activate :"
                 },
             }
         },
         name: "Tiny-User-Interface Activation",
         id:"beavers-tinyUI-activate",
-        // @ts-ignore
         desc: "beaversGamepad.TUIGamepadModule.desc2"
     }
 
