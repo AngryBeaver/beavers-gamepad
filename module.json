@@ -2,7 +2,7 @@
   "title": "Beaver's Gamepad",
   "description": "For controlling actors while playing locally on a central map monitor",
   "id": "beavers-gamepad",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "socket": true,
   "authors": [
     {

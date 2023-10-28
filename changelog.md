@@ -1,4 +1,6 @@
 # 2.0.x Context Modules
+## 2.1.1 fix remove TinyUi
+- bug: when deleting a user that has a tiny-ui the ui sticks around until reloaded. fixed.
 ## 2.1.0 Token Rotation Module
 - feature: token rotation module
 - fix default config for standard mapped gamepads
