@@ -28,8 +28,8 @@ Hooks.on("ready", async function(){
         Hooks.call(HOOK_READY, game[NAMESPACE].GamepadModuleManager);
         game[NAMESPACE].GamepadModuleManager.updateGamepadModuleInstance();
         game[NAMESPACE].TinyUIModuleManager.updateUIModules();
-        const ui = new CharacterSelectionUI();
-        game[NAMESPACE].TinyUIModuleManager.addModule(ui.name,ui);
+        const csUI = new CharacterSelectionUI();
+        game[NAMESPACE].TinyUIModuleManager.addModule(csUI.name,csUI);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TokenRotation);
