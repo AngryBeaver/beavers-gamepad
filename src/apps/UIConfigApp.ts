@@ -67,6 +67,7 @@ export class UIConfigApp extends FormApplication<any,any,any> {
             const id = $(e.currentTarget).data("id");
             (game as Game)[NAMESPACE].Settings.removeUserData(id).then(
                 ()=>{
+                    (game as Game)[NAMESPACE].TinyUIModuleManager.removeInstance(id);
                     this.render()
                 }
             );

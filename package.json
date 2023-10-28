@@ -1,7 +1,7 @@
 {
 	"name": "beavers-gamepad",
 	"title": "Beaver's Gamepad",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"description": "For controlling actors while playing locally on a central map monitor",
 	"#devDir": "C:\\Users\\Riess\\AppData\\Local\\FoundryVTT\\Data\\modules",
 	"#devDir": "C:\\data\\Data\\modules",

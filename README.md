@@ -6,25 +6,32 @@
 
 ## Description
 This module is intended to be used in local sessions with one Map Monitor and multiple connected gamepads.
-Each gamepad can be assigned to an actor.
+Initially this module comes with a collection of submodules that let you choose an actor and gives you control over that token move and rotation.
 
-You can add GamepadModules to a gamepad and configure them. 
-Initially at least three GamepadModules are available 
+![img.png](pictures/tinyUI.png)
+
+### GamepadModules
+beavers-gamepad is Built as Framework to host submodules named GamepadModules.
+GamepadModules then assignes actions to axes or buttons.
+Initially at least four GamepadModules are available 
 - "Beaver's Token movement" which allows to move a token around.
-- "Activate User Context" which activates a user Context menu.
-- "Conroll User Context" which controls the user context menu.
+- "Beaver's Token rotation" which allows to rotate a token.
+- "Activate Tiny-User-Interface" which activates a user Context menu.
+- "Conroll Tiny-User-Interfacet" which controls the tiny-user-interface.
 
-A User Context can contain multiple ContextModules beavers-gamepad provide at least one module:
-- "Beavers Character Selection" with this context you can select another actor.
-
-Anyone can extend and register additional Gamepad or GamepadContext Modules.
+### TinyUIModules
+Tiny-User-Interface is also built as Framework to host submodules names TinyUIModules.
+TinyUIModules allow simple interactions with the user.
+beavers-gamepad provide at least one module:
+- "Beavers Character Selection" with this context you can choose and select another actor to control.
 
 ## How To
 ### Example UserManagement
 For each player on your table add a new user to your game and one additional user Map:
-![img_2.png](pictures/User Management.png)
+![img_2.png](pictures/UserManagement.png)
 
 Give each player ownership to at least one actor and give the Map user ownership for all such actors:
+
 ![img.png](pictures/ownership.png)
 
 _If you assign multiple actors to a user the user can later decide whom to play._
@@ -128,11 +135,10 @@ This module depends on the browsers ability to detect gamepads, i can not do muc
 ### Linking phyisical Gamepad to Configuration
 - I have observed that it is currently hard to know which axes number correlates to what on your gamepad.
   - I hope that i can find the time to implement some sort of "detect axes" by using the physicall gamepad.
+  - You can use https://3960.org/sandbox/gamepad-test.html to find the appropriate numeration.
 - I have observed that it is hard to map a gamepad identification name to the real gamepad especially if you have multiple same gamepads.
-  - I hope that i can find the time to fix that somehow. 
+  - I hope that I can find the time to fix that somehow. 
 
 ## Extensions
 You can write own GamepadModules or TinyUiModules. There will be a section on how to do this as soon as the interfaces are more established. Currently everything might still be in the flow.
 
-## Test your gamepad
-https://3960.org/sandbox/gamepad-test.html
