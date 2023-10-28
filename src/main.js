@@ -33,6 +33,10 @@ Hooks.on("ready", async function(){
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
         game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TokenRotation);
+        if(!game[NAMESPACE].socket){
+            ui.notifications.warn("Parts of beavers-gamepad won't work when module socketlib is not enabled")
+        }
+
         game[NAMESPACE].socket.register(SOCKET_UPDATE_USER, (userId,data)=>{
             return game["users"].get(userId).update(data);
         });
