@@ -1,8 +1,12 @@
-import {NAMESPACE} from "./main.js";
 import {GamepadConfigApp} from "./apps/GamepadConfigApp.js";
 import {BeaversGamepadManager} from "./apps/BeaversGamepadManager.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {UIConfigApp} from "./apps/UIConfigApp.js";
+
+export const NAMESPACE = "beavers-gamepad" as const;
+export const SOCKET_UPDATE_USER = "updateUser";
+export const HOOK_READY = NAMESPACE+".ready";
+export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
 
 export const USER_UI: string = "user_ui";
 export const ACTOR_FILTER = "actor_filter";
@@ -13,55 +17,57 @@ export class GamepadSettings implements GamepadSettingsI{
     private GAMEPAD_CONFIG_BUTTON = "gamepad_config_button";
     private UI_CONFIG_BUTTON = "ui_config_button"
 
-    private _gamepadManager: BeaversGamepadManager;
-    private _gamepadModuleManager: GamepadModuleManager;
+    private _gamepadManager: BeaversGamepadManagerI;
+    private _gamepadModuleManager: GamepadModuleManagerI;
+    private _game: ExtendedGame;
 
     constructor() {
-        this._gamepadManager = game[NAMESPACE].GamepadManager as BeaversGamepadManager
-        this._gamepadModuleManager = game[NAMESPACE].GamepadModuleManager as GamepadModuleManager
-        if (!(game instanceof Game)) {
-            throw new Error("Settings called before game has been initialized");
-        }
+        this._game = (game as ExtendedGame);
+        this._gamepadManager = this._game[NAMESPACE].GamepadManager
+        this._gamepadModuleManager = this._game[NAMESPACE].GamepadModuleManager
 
-        game.settings.register(NAMESPACE, USER_UI, {
+        // @ts-ignore
+        this._game.settings.register(NAMESPACE, USER_UI, {
             scope: "client",
             config: false,
             default: {},
             type: Object
         });
 
-        game.settings.register(NAMESPACE, ACTOR_FILTER, {
-            name: game.i18n.localize('beaversGamepad.settings.actorFilter.name'),
-            hint: game.i18n.localize('beaversGamepad.settings.actorFilter.hint'),
+        // @ts-ignore
+        this._game.settings.register(NAMESPACE, ACTOR_FILTER, {
+            name: this._game.i18n?.localize('beaversGamepad.settings.actorFilter.name'),
+            hint: this._game.i18n?.localize('beaversGamepad.settings.actorFilter.hint'),
             scope: "client",
             config: true,
             default: "character"
         });
 
-        game.settings.register(NAMESPACE, this.GAMEPAD_CONFIG, {
-            name: game.i18n.localize('beaversGamepad.settings.gamepadConfig.name'),
+        // @ts-ignore
+        this._game.settings.register(NAMESPACE, this.GAMEPAD_CONFIG, {
+            name: this._game.i18n?.localize('beaversGamepad.settings.gamepadConfig.name'),
             scope: "client",
             config: false,
             default: {},
             type: Object
         });
 
-        game.settings.registerMenu(NAMESPACE, this.GAMEPAD_CONFIG_BUTTON, {
-            name: game.i18n.localize('beaversGamepad.settings.gamepadConfig.name'),
-            label: game.i18n.localize("beaversGamepad.settings.gamepadConfig.label"),
-            hint: game.i18n.localize('beaversGamepad.settings.gamepadConfig.hint'),
-            //@ts-ignore
+        this._game.settings.registerMenu(NAMESPACE, this.GAMEPAD_CONFIG_BUTTON, {
+            icon: "",
+            name: this._game.i18n?.localize('beaversGamepad.settings.gamepadConfig.name')||"config",
+            label: this._game.i18n?.localize("beaversGamepad.settings.gamepadConfig.label")||"config",
+            hint: this._game.i18n?.localize('beaversGamepad.settings.gamepadConfig.hint')||"config",
             type: GamepadConfigApp,
-            restricted: false,
+            restricted: false
         });
 
-        game.settings.registerMenu(NAMESPACE, this.UI_CONFIG_BUTTON, {
-            name: game.i18n.localize('beaversGamepad.settings.uiConfig.name'),
-            label: game.i18n.localize("beaversGamepad.settings.uiConfig.label"),
-            hint: game.i18n.localize('beaversGamepad.settings.uiConfig.hint'),
-            //@ts-ignore
+        this._game.settings.registerMenu(NAMESPACE, this.UI_CONFIG_BUTTON, {
+            name: this._game.i18n?.localize('beaversGamepad.settings.uiConfig.name')||"uiConfig",
+            label: this._game.i18n?.localize("beaversGamepad.settings.uiConfig.label")||"uiConfig",
+            hint: this._game.i18n?.localize('beaversGamepad.settings.uiConfig.hint')||"uiConfig",
+            icon: "",
             type: UIConfigApp,
-            restricted: false,
+            restricted: false
         });
 
     }
@@ -82,7 +88,7 @@ export class GamepadSettings implements GamepadSettingsI{
         }
         await this.set(USER_UI,data);
         if(options?.updateUI){
-            game[NAMESPACE].TinyUIModuleManager.updateUIModules()
+            this._game[NAMESPACE].TinyUIModuleManager.updateUIModules()
         }
     }
 
@@ -109,22 +115,18 @@ export class GamepadSettings implements GamepadSettingsI{
         const data = this.getUIData();
         delete data[userId];
         await this.set(USER_UI, data);
-        game[NAMESPACE].TinyUIModuleManager.updateUIModules()
+        this._game[NAMESPACE].TinyUIModuleManager.updateUIModules()
     }
 
     public get(key: string): any {
-        if (!(game instanceof Game)) {
-            throw new Error("Settings called before game has been initialized");
-        }
-        return game.settings.get(NAMESPACE, key);
+        // @ts-ignore
+        return this._game.settings.get(NAMESPACE, key);
 
     };
 
-    public set(key, value): Promise<any> {
-        if (!(game instanceof Game)) {
-            throw new Error("Settings called before game has been initialized");
-        }
-        return game.settings.set(NAMESPACE, key, value);
+    public set(key:string, value:any): Promise<any> {
+        // @ts-ignore
+        return this._game.settings.set(NAMESPACE, key, value);
     }
 
     /**

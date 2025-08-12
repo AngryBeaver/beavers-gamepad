@@ -1,4 +1,4 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
 
 /**
  * gamepadmodule manager
@@ -19,9 +19,10 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
 
     constructor() {
         Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
-        Hooks.on("updateUser", async function(user){
-            const gamepadIndex = (game as Game)[NAMESPACE].Settings.getGamepadIndexForUser(user.id)
+        Hooks.on("updateUser", async function(user:User){
+            const gamepadIndex = (game as ExtendedGame)[NAMESPACE].Settings.getGamepadIndexForUser(user.id)
             if(gamepadIndex){
+                // @ts-ignore
                 this.updateGamepadModuleInstance()
             }
 
@@ -54,7 +55,7 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
      * if gamepadmodule is non existant on the gamepad it creates an instance.
      */
     updateGamepadModuleInstance() {
-        const gamepadConfigs = (game as Game)[NAMESPACE].Settings.getGamepadConfigs();
+        const gamepadConfigs = (game as ExtendedGame)[NAMESPACE].Settings.getGamepadConfigs();
         for (const [gamepadIndex, gamepadConfig] of Object.entries(gamepadConfigs)) {
             for (const [moduleId, moduleConfig] of Object.entries(gamepadConfig.modules)) {
                 let gamepadModuleInstance = this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId);
@@ -122,7 +123,7 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
         return gamepadModuleInstance;
     }
 
-    private _getRegisteredGamepadModuleInstance(gamepadIndex, moduleId): GamepadModuleInstance | undefined {
+    private _getRegisteredGamepadModuleInstance(gamepadIndex: string, moduleId: string): GamepadModuleInstance | undefined {
         if (this.registeredGamepadModuleInstances[gamepadIndex]) {
             if (this.registeredGamepadModuleInstances[gamepadIndex][moduleId]) {
                 return this.registeredGamepadModuleInstances[gamepadIndex][moduleId]

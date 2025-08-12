@@ -1,20 +1,7 @@
-import {NAMESPACE} from "../main.js";
+import {NAMESPACE} from "../GamepadSettings.js";
+import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
 
-function staticImplements<T>() {
-    return <U extends T>(constructor: U) => {constructor};
-}
-
-// @ts-ignore
-@staticImplements<GamepadModule>()
 export class TinyUserInterfaceGamepadModuleActivate {
-
-    private _data:{
-        config:  GamepadModuleConfig,
-        userId: string,
-    }={
-        config: TinyUserInterfaceGamepadModuleActivate.defaultConfig,
-        userId: "",
-    }
 
     public static defaultConfig: GamepadModuleConfig={
         binding: {
@@ -32,6 +19,13 @@ export class TinyUserInterfaceGamepadModuleActivate {
         desc: "beaversGamepad.TUIGamepadModule.desc2"
     }
 
+    private _data:{
+        config:  GamepadModuleConfig,
+        userId: string,
+    }={
+        config: TinyUserInterfaceGamepadModuleActivate.defaultConfig,
+        userId: "",
+    }
     public updateGamepadConfig(gamepadConfig: GamepadConfig){
         this._data.config = TinyUserInterfaceGamepadModuleActivate.defaultConfig;
         this._data.config.binding = gamepadConfig.modules[this._data.config.id].binding;
@@ -47,11 +41,11 @@ export class TinyUserInterfaceGamepadModuleActivate {
         }
         const index = this._data.config.binding.buttons["activate"].index;
         if(event.buttons[index]){
-            const choices = game[NAMESPACE].TinyUIModuleManager.getUiModuleChoices();
-            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).select({choices:choices})
+            const choices = (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getUiModuleChoices();
+            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).select({choices:choices})
                 .then(moduleId=>{
                     if(moduleId !== null && moduleId !== "") {
-                        game[NAMESPACE].TinyUIModuleManager.processUI(this._data.userId, moduleId)
+                        (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.processUI(this._data.userId, moduleId)
                     }
                 })
         }
@@ -62,3 +56,5 @@ export class TinyUserInterfaceGamepadModuleActivate {
 
     }
 }
+
+type _staticCheck = AssertAssignable<typeof TinyUserInterfaceGamepadModuleActivate, StaticOf<GamepadModule>>;

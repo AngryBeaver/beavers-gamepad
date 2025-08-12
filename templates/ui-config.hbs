@@ -33,6 +33,35 @@
                 </p>
             </div>
             <div class="form-group">
+                <label>{{localize "beaversGamepad.uiConfigApp.userPositionPx"}}</label>
+                <div class="form-fields">
+                    <input type="number"
+                           name="{{@key}}.top"
+                           value="{{this.top}}"
+                           placeholder="Top"
+                           data-dtype="Number"
+                           step="1" />
+                    <input type="number"
+                           name="{{@key}}.left"
+                           value="{{this.left}}"
+                           placeholder="Left"
+                           data-dtype="Number"
+                           step="1" />
+                </div>
+                <button type="button"
+                        class="center-user-pos"
+                        data-id="{{@key}}"
+                        style="flex:0;line-height:20px;"
+                        title="{{localize "beaversGamepad.uiConfigApp.userPositionPxCenter"}}">
+                    <i class="fas fa-crosshairs"></i>
+                </button>
+
+                <p class="notes">
+                    {{localize "beaversGamepad.uiConfigApp.userPositionPxHint"}}
+                </p>
+            </div>
+
+            <div class="form-group">
                 <label>{{localize "beaversGamepad.uiConfigApp.tinyUI"}}</label>
                 <div class="form-fields">
                     <input type="checkbox" name="{{@key}}.enableUI" {{#if this.enableUI}}checked{{/if}}>
