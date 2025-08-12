@@ -1,5 +1,5 @@
 import {TinyUserInterface} from "./TinyUserInterface.js";
-import {NAMESPACE} from "../main.js";
+import {NAMESPACE} from "../GamepadSettings.js";
 
 export class TinyUIModuleManager implements TinyUIModuleManagerI{
 
@@ -19,7 +19,7 @@ export class TinyUIModuleManager implements TinyUIModuleManagerI{
         return this._data.instances[userId];
     }
     getUiModuleChoices(){
-        const choices = {};
+        const choices:any = {};
         Object.entries(this._data.uiModules).forEach(([moduleId,uiModule])=>{
             choices[moduleId] = {text:uiModule.name}
         });
@@ -34,7 +34,7 @@ export class TinyUIModuleManager implements TinyUIModuleManagerI{
      * if uiModuleInstance is nonexistent on the gamepad it creates an instance.
      */
     updateUIModules(){
-        const uiData = (game as Game)[NAMESPACE].Settings.getUIData();
+        const uiData = (game as ExtendedGame)[NAMESPACE].Settings.getUIData();
         for(const [userId,userData] of Object.entries(uiData)){
             if(userData.enableUI){
                 if(this._data.instances[userId]){

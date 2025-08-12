@@ -1,27 +1,6 @@
-import {NAMESPACE} from "../main.js";
+import {NAMESPACE} from "../GamepadSettings.js";
 
-function staticImplements<T>() {
-    return <U extends T>(constructor: U) => {constructor};
-}
-
-// @ts-ignore
-@staticImplements<GamepadModule>()
 export class TinyUserInterfaceGamepadModule {
-
-    private _data:{
-        config:  GamepadModuleConfig,
-        consecutiveTick: number,
-        userPosition: string
-        userId: string,
-    }={
-        config: TinyUserInterfaceGamepadModule.defaultConfig,
-        consecutiveTick: 0,
-        userPosition:"bottom",
-        userId: "",
-    }
-
-    private X_AXES = "horizontal";
-    private Y_AXES = "vertical";
 
     public static defaultConfig: GamepadModuleConfig={
         binding: {
@@ -52,10 +31,25 @@ export class TinyUserInterfaceGamepadModule {
         desc: "beaversGamepad.TUIGamepadModule.desc"
     }
 
+    private _data:{
+        config:  GamepadModuleConfig,
+        consecutiveTick: number,
+        userPosition: string
+        userId: string,
+    }={
+        config: TinyUserInterfaceGamepadModule.defaultConfig,
+        consecutiveTick: 0,
+        userPosition:"bottom",
+        userId: "",
+    }
+
+    private X_AXES = "horizontal";
+    private Y_AXES = "vertical";
+
     public updateGamepadConfig(gamepadConfig: GamepadConfig){
         this._data.config = TinyUserInterfaceGamepadModule.defaultConfig;
         this._data.config.binding = gamepadConfig.modules[this._data.config.id].binding;
-        const userData = game[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
+        const userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
         this._data.userPosition = userData.userPosition;
         this._data.userId = gamepadConfig.userId;
     }
@@ -78,7 +72,7 @@ export class TinyUserInterfaceGamepadModule {
         const axes = this.getAxes(event,this.X_AXES,this.Y_AXES,this._data.userPosition);
         if(axes.y != 0){
             if(this._data.consecutiveTick > 3){
-                game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).rotateWheel(axes.y)
+                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).rotateWheel(axes.y)
                 this._data.consecutiveTick = 0;
             }
         }
@@ -87,11 +81,11 @@ export class TinyUserInterfaceGamepadModule {
     private tickButton(event: GamepadTickEvent){
         const okIndex = this._data.config.binding.buttons["ok"].index;
         if(event.buttons[okIndex]){
-            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).ok();
+            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).ok();
         }
         const abortIndex = this._data.config.binding.buttons["abort"].index;
         if(event.buttons[abortIndex]){
-            game[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).abort();
+            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).abort();
         }
     }
 
@@ -128,10 +122,10 @@ export class TinyUserInterfaceGamepadModule {
         return result;
     }
 
-
-
-
     public destroy(){
 
     }
 }
+
+
+type _staticCheck = AssertAssignable<typeof TinyUserInterfaceGamepadModule, StaticOf<GamepadModule>>;

@@ -1,3 +1,25 @@
 body.hide-ui > .beavers-tiny-ui:not(#alot):not(#of):not(#things):not(#to):not(#have):not(#more):not(#specificity):not(#then):not(#monk):not(#logo):not(#interface):not(#board):not(#hud):not(#ui-left):not(#ui-middle):not(#ui-right):not(#confetti-canvas):not(#dice-box-canvas):not(#pause):not(#notifications):not(#narrator):not(#combat-popout):not(.image-popout):not(.journal-sheet):not(.journal-attached):not(#slideshow-display):not(#slideshow-canvas):not(#combat-carousel):not(#levels3d):not(#av-config):not(#camera-views){
     display: flex !important
 }
+.beavers-tiny-ui{
+    position: absolute;
+    overflow: hidden;
+    padding: 0px;
+    height: 50px;
+    width: 210px;
+    border: 1px solid var(--color-border-dark);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    max-height: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    background: var(--background);
+    box-shadow: 0 0 20px black;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 8px;
+    z-index: var(--z-index-app);
+    transform-origin: top left;
+}

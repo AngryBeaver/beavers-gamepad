@@ -1,28 +1,7 @@
-import {NAMESPACE} from "../main.js";
+import {NAMESPACE} from "../GamepadSettings.js";
+import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
 
-function staticImplements<T>() {
-    return <U extends T>(constructor: U) => {
-        constructor
-    };
-}
-
-// @ts-ignore
-@staticImplements<GamepadModule>()
 export class TokenRotation {
-
-    private _data: {
-        config: GamepadModuleConfig,
-        userPosition: string
-        userId: string,
-        actorId?: string,
-    } = {
-        config: TokenRotation.defaultConfig,
-        userPosition: "bottom",
-        userId: "",
-    }
-
-    private X_AXES = "horizontal";
-    private Y_AXES = "vertical";
 
     public static defaultConfig: GamepadModuleConfig = {
         binding: {
@@ -43,13 +22,27 @@ export class TokenRotation {
         desc: "beaversGamepad.TokenRotation.desc"
     }
 
+    private _data: {
+        config: GamepadModuleConfig,
+        userPosition: string
+        userId: string,
+        actorId?: string,
+    } = {
+        config: TokenRotation.defaultConfig,
+        userPosition: "bottom",
+        userId: "",
+    }
+
+    private X_AXES = "horizontal";
+    private Y_AXES = "vertical";
+
     public updateGamepadConfig(gamepadConfig: GamepadConfig) {
         this._data.config = TokenRotation.defaultConfig;
         this._data.config.binding = gamepadConfig.modules[this._data.config.id].binding;
-        const userData = game[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
+        const userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
         this._data.userPosition = userData.userPosition;
         this._data.userId = gamepadConfig.userId;
-        const user = (game as Game).users?.find(u=>u.id === gamepadConfig.userId);
+        const user = (game as Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
         this._data.actorId = user?.character?.id;
     }
 
@@ -70,18 +63,17 @@ export class TokenRotation {
             // @ts-ignore
             const token:Token = (canvas as Canvas).tokens?.objects?.children.find(token => this._data.actorId?.endsWith(token.actor?.id) );
             if(token){
+                // @ts-ignore
                 token.rotate(this.getDegree(axes),0);
             }
         }
     }
 
-    private getDegree(point: Point):number{
+    private getDegree(point: Canvas.Point):number{
         return (Math.atan2(point.x*-1, point.y) * 180) / Math.PI;
     }
 
-
-
-    private getAxes(event: GamepadTickEvent, xAxis: string, yAxis: string, userPosition: string): Point {
+    private getAxes(event: GamepadTickEvent, xAxis: string, yAxis: string, userPosition: string): Canvas.Point {
         let x = 0;
         let y = 0;
         for (const [i, value] of Object.entries(event.gamepad.axes)) {
@@ -118,3 +110,5 @@ export class TokenRotation {
 
     }
 }
+
+type _staticCheck = AssertAssignable<typeof TokenRotation, StaticOf<GamepadModule>>;

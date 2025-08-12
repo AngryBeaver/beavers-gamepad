@@ -5,8 +5,7 @@
  * each user instance can be dragged and rotated to position it.
  * the app needs to be very small. in place dropdown ?
  * */
-import {NAMESPACE} from "../main.js";
-import {GamepadSettings} from "../GamepadSettings.js";
+import {GamepadSettings,NAMESPACE} from "../GamepadSettings.js";
 import {TinyUserInterfaceGamepadModule} from "../modules/TinyUserInterfaceGamepadModule.js";
 
 export class TinyUserInterface extends Application implements TinyUserInterfaceI {
@@ -15,7 +14,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         userId: string,
         wheel: number,
         selectData: SelectData,
-        resolve?:(any)=>void,
+        resolve?:(arg0:any)=>void,
         html: any,
         glow:boolean,
     }
@@ -25,7 +24,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
 
     constructor(userId: string, options: any = {}) {
         super(options);
-        this._settings = game[NAMESPACE].Settings as GamepadSettings
+        this._settings = (game as ExtendedGame)[NAMESPACE].Settings as GamepadSettings
         this._data = {
             userId: userId,
             wheel: 0,
@@ -38,9 +37,10 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
             this.bringToTop();
         }
         this.setPosition({top:userData.top||0,left:userData.left||0});
-        this.hook = Hooks.on("updateUser", async function(user){
+        this.hook = Hooks.on("updateUser", async function(user:any){
             if(user.id === userId) {
-                this.render();
+                // @ts-ignore
+                this.render(true);
             }
         }.bind(this));
     }
@@ -77,15 +77,15 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         return {
             transform: userData.userPosition==="left"?"90deg":userData.userPosition==="top"?"180deg":userData.userPosition==="right"?"270deg":"0deg",
             userData: userData,
-            user: game["users"].get(this._data.userId),
+            user: (game as foundry.Game)["users"].get(this._data.userId),
             choices: this._data.selectData.choices,
             glow: this._data.glow
         }
     }
 
-    activateListeners(html) {
+    activateListeners(html:any) {
         this._data.html = html;
-        html.find(".selection").on("wheel", (e) => {
+        html.find(".selection").on("wheel", (e:any) => {
             if (e.originalEvent.deltaY > 0) {
                 this.rotateWheel(1);
             }
@@ -93,18 +93,18 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
                 this.rotateWheel(-1);
             }
         });
-        html.find("a.up").on("click", (e) => {
+        html.find("a.up").on("click", (e:any) => {
             this.rotateWheel(1);
         });
-        html.find("a.down").on("click", (e) => {
+        html.find("a.down").on("click", (e:any) => {
             this.rotateWheel(-1);
         });
-        html.find(".select").on("click", (e) => {
+        html.find(".select").on("click", (e:any) => {
             const id = $(e.currentTarget).data().key;
             this._choose(id);
         });
-        html.find('.drag-me').on("mousedown", e => {
-            const app = $(e.currentTarget).parent(".app");
+        html.find('.drag-me').on("mousedown", (e:any) => {
+            const app = $(e.currentTarget).parent(".beavers-tiny-ui");
             dragElement(e,app[0])
                 .then(x=>{
                     this._settings.setUserData(this._data.userId,x)
@@ -123,11 +123,11 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         const dfd = new Deferred<string>();
         let promise = dfd.promise;
         if(gamepadIndex){
-            game[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,TinyUserInterfaceGamepadModule.defaultConfig.id);
+            (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,TinyUserInterfaceGamepadModule.defaultConfig.id);
             this._data.glow = true;
             promise = dfd.promise.then(x=>{
                 this._data.glow = false;
-                game[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
+                (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
                 return this._render(true).then(y=>x);
             })
         }
@@ -183,8 +183,8 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
 
 class Deferred<T> {
     promise:Promise<T>;
-    reject:()=>void;
-    resolve:(value:T)=>void;
+    reject: () => void = ()=> void 0;
+    resolve: (value: T) => void = (value:any) => void 0;
     constructor() {
         this.promise = new Promise((resolve, reject)=> {
             this.reject = reject
@@ -193,12 +193,12 @@ class Deferred<T> {
     }
 }
 
-function dragElement(event, elmnt):Promise<{top:number,left:number}> {
+function dragElement(event:any, elmnt:any):Promise<{top:number,left:number}> {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, top = elmnt.offsetTop-3, left = elmnt.offsetLeft;
     const deferred = new Deferred<{top:number,left:number}>();
     dragMouseDown(event);
     return deferred.promise;
-    function dragMouseDown(e) {
+    function dragMouseDown(e:any) {
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
@@ -209,7 +209,7 @@ function dragElement(event, elmnt):Promise<{top:number,left:number}> {
         document.onmousemove = elementDrag;
     }
 
-    function elementDrag(e) {
+    function elementDrag(e:any) {
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
@@ -220,14 +220,13 @@ function dragElement(event, elmnt):Promise<{top:number,left:number}> {
         top = elmnt.offsetTop - pos2-3;
         left = elmnt.offsetLeft - pos1
         // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2-3) + "px";
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
     }
 
     function closeDragElement() {
-        // stop moving when mouse button is released:
         document.onmouseup = null;
         document.onmousemove = null;
-        deferred.resolve({top:top,left:left});
+        deferred.resolve({top:Math.max(top,0),left:Math.max(left,0)});
     }
 }

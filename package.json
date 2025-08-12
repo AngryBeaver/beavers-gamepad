@@ -1,12 +1,11 @@
 {
 	"name": "beavers-gamepad",
 	"title": "Beaver's Gamepad",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "For controlling actors while playing locally on a central map monitor",
-	"#devDir": "C:\\Users\\Riess\\AppData\\Local\\FoundryVTT\\Data\\modules",
-	"#devDir": "C:\\data\\Data\\modules",
-	"devDir": "D:\\Vtts\\v10\\Data\\modules",
-	"#devDir": "D:\\Vtts\\v11\\Data\\modules",
+    "devDir": "c:\\vtts\\v13.347\\Data\\modules",
+    "#devDir": "c:\\vtts\\v12.331\\Data\\modules",
+    "#devDir": "c:\\vtts\\v11.315\\Data\\modules",
 	"main": "src/main.js",
 	"scripts": {
 		"type": "npx -p typescript tsc src/types.ts --declaration --emitDeclarationOnly --outDir dist/src",
@@ -27,9 +26,8 @@
 		"printWidth": 120
 	},
 	"devDependencies": {
-		"beavers-system-interface": "^2.1.5",
-		"@ethaks/fvtt-quench": "^0.6.0",
-		"@league-of-foundry-developers/foundry-vtt-types": "^9.280.0",
+		"beavers-system-interface": "2.3.1",
+		"@league-of-foundry-developers/foundry-vtt-types": "^13.346.0-beta",
 		"@types/jest": "^27.4.1",
 		"del": "^6.0.0",
 		"gulp": "^4.0.2",
@@ -44,7 +42,7 @@
 		"json-stringify-pretty-compact": "^3.0.0",
 		"karma-cli": "^2.0.0",
 		"prettier": "^2.7.1",
-		"typescript": "^4.6.3"
+		"typescript": "^5.4"
 	},
 	"dependencies": {
 		"save-dev": "^0.0.1-security"

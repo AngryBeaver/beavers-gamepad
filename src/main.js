@@ -1,5 +1,5 @@
 import {BeaversGamepadManager} from "./apps/BeaversGamepadManager.js";
-import {GamepadSettings} from "./GamepadSettings.js";
+import {GamepadSettings, HOOK_READY, NAMESPACE, SOCKET_UPDATE_USER} from "./GamepadSettings.js";
 import {DND5e} from "./systems/DND5e.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {TinyUIModuleManager} from "./apps/TinyUIModuleManager.js";
@@ -7,12 +7,7 @@ import {TinyUserInterfaceGamepadModule} from "./modules/TinyUserInterfaceGamepad
 import {TinyUserInterfaceGamepadModuleActivate} from "./modules/TinyUserInterfaceGamepadModuleActivate.js";
 import {CharacterSelectionUI} from "./apps/CharacterSelectionUI.js";
 import {TokenRotation} from "./modules/TokenRotation.js";
-
-
-export const NAMESPACE = "beavers-gamepad"
-export const HOOK_READY = NAMESPACE+".ready";
-export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
-export const SOCKET_UPDATE_USER = "updateUser";
+import {TokenMovement} from "./modules/TokenMovement.js";
 
 Hooks.on("ready", async function(){
     setTimeout(()=>{
@@ -30,9 +25,7 @@ Hooks.on("ready", async function(){
         game[NAMESPACE].TinyUIModuleManager.updateUIModules();
         const csUI = new CharacterSelectionUI();
         game[NAMESPACE].TinyUIModuleManager.addModule(csUI.name,csUI);
-        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModule);
-        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
-        game[NAMESPACE].GamepadModuleManager.registerGamepadModule(TokenRotation);
+
         if(!game[NAMESPACE].socket){
             ui.notifications.warn("Parts of beavers-gamepad won't work when module socketlib is not enabled")
         }
@@ -42,6 +35,13 @@ Hooks.on("ready", async function(){
         });
     },1000);
 });
+
+Hooks.on(HOOK_READY, async function(manager){
+    manager.registerGamepadModule(TokenMovement);
+    manager.registerGamepadModule(TinyUserInterfaceGamepadModule);
+    manager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
+    manager.registerGamepadModule(TokenRotation);
+})
 
 Hooks.once("socketlib.ready", () => {
     game[NAMESPACE]=game[NAMESPACE]||{};

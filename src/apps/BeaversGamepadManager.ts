@@ -1,4 +1,4 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../main.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
 
 /**
  * here are physical gamepads registered
@@ -101,6 +101,6 @@ export class BeaversGamepadManager {
     }
 
     private _triggerGamepadTickEvent(gamepadTickEvent:GamepadTickEvent) {
-        (game as Game)[NAMESPACE].GamepadModuleManager.tick(gamepadTickEvent);
+        (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.tick(gamepadTickEvent);
     }
 }

@@ -1,9 +1,7 @@
-<div class="beavers-tiny-ui app flexrow"
-     style="transform:rotate({{transform}});position:absolute;overflow:hidden; padding:0px 0px; height:50px; width:210px; top:{{userData.top}}px; left:{{userData.left}}px; border: 1px solid var(--color-border-dark);
-             {{#if glow}}box-shadow: 0 0 30px 5px {{user.color}};{{/if}}
-             ">
+<div class="beavers-tiny-ui flexrow"
+     style="transform:rotate({{transform}}); top:{{userData.top}}px; left:{{userData.left}}px;{{#if glow}}box-shadow: 0 0 30px 5px {{user.color}};{{/if}}">
     <div class="drag-me"
-         style="flex:12px 0;border-right:1px solid black;margin-right:2px;cursor: move;background-color:{{user.color}}"></div>
+         style="flex:0 0 12px;height:100%;border-right:1px solid black;margin-right:2px;cursor: move;background-color:{{user.color}}"></div>
     {{#if (eq (beavers-objectLen choices) 0)}}
         <div class="flexcol">
             <div class="flexrow" style="line-height:20px;font-weight:800;color:grey">
