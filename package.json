@@ -1,7 +1,7 @@
 {
 	"name": "beavers-gamepad",
 	"title": "Beaver's Gamepad",
-	"version": "2.1.2",
+	"version": "2.1.3",
 	"description": "For controlling actors while playing locally on a central map monitor",
     "devDir": "c:\\vtts\\v13.347\\Data\\modules",
     "#devDir": "c:\\vtts\\v12.331\\Data\\modules",
