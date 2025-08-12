@@ -115,20 +115,32 @@ export class TokenMovement implements TokenMovementInstance{
             collisionPoint.x = collisionPoint.x + x * position.size
             collisionPoint.y = collisionPoint.y + y * position.size;
             if (!token.checkCollision(collisionPoint) && this._checkSceneCollision(collisionPoint)) {
-                this.isMoving = true;
-                // @ts-ignore
-                token.document.update({
-                    ...movePoint,
-                    flags: {beaversTokenMovement: true}
-                }, {diff: false}).finally(() => {
-                    this.isMoving = false;
-                    if (this.position) {
-                        this.position.point = movePoint;
-                        this.position.collision = collisionPoint;
-                    }
-                })
+                this.moveAndWait(token,movePoint)
+            }
+            if (this.position) {
+                this.position.point = movePoint;
+                this.position.collision = collisionPoint;
             }
         }
+    }
+    async moveAndWait(token: Token, movePoint: {x:number;y:number}) {
+        this.isMoving = true;
+        // @ts-ignore
+
+        token.document.update({ x: movePoint.x, y: movePoint.y })
+            .finally(()=>{
+                // Wait for the animation to finish (v13+)
+                const p =
+                    typeof (token as any).movementAnimationPromise === "function"
+                        ? (token as any).movementAnimationPromise()
+                        : (token as any).movementAnimationPromise;
+
+                if (p && typeof p.then === "function") {
+                    p.catch(() => {}).finally(()=>this.isMoving = false);
+                }else {
+                    this.isMoving = false;
+                }
+            });
     }
 
     private _reduceConsecutiveTicks(){
@@ -166,7 +178,7 @@ export class TokenMovement implements TokenMovementInstance{
 
     private _getToken():Token {
         // @ts-ignore
-        const token:Token = canvas.tokens?.objects?.children.find(token => this.actorId.endsWith(token?.actor?.uuid) );
+        const token:Token = (canvas as Canvas).tokens?.objects?.children.find((token:any) => this.actorId.endsWith(token?.actor?.uuid) );
         // @ts-ignore
         if(token.id !== this.token?.id) {
             this.position = undefined;

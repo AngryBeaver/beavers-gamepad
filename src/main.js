@@ -51,4 +51,3 @@ Hooks.once("socketlib.ready", () => {
 Handlebars.registerHelper("beavers-objectLen", function(json) {
     return Object.keys(json).length;
 });
-
