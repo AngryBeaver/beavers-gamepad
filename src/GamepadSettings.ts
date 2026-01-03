@@ -2,14 +2,7 @@ import {GamepadConfigApp} from "./apps/GamepadConfigApp.js";
 import {BeaversGamepadManager} from "./apps/BeaversGamepadManager.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {UIConfigApp} from "./apps/UIConfigApp.js";
-
-export const NAMESPACE = "beavers-gamepad" as const;
-export const SOCKET_UPDATE_USER = "updateUser";
-export const HOOK_READY = NAMESPACE+".ready";
-export const HOOK_GAMEPAD_CONNECTED = NAMESPACE+".connected";
-
-export const USER_UI: string = "user_ui";
-export const ACTOR_FILTER = "actor_filter";
+import {NAMESPACE,USER_UI,ACTOR_FILTER} from "./definitions.js";
 
 export class GamepadSettings implements GamepadSettingsI{
 
@@ -99,7 +92,6 @@ export class GamepadSettings implements GamepadSettingsI{
     public getUserData(userId: string): UserData {
         return this.get(USER_UI)?.[userId] || {
             userPosition: "bottom",
-            enableUI:false,
             top:0,
             left:0
         }

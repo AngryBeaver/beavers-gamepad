@@ -13,8 +13,8 @@ export class DND5e {
             hook: 0,
         };
         closure.hook = Hooks.on("createActor", async function (n: Actor) {
-            const transformedID = (game as Game).actors?.find((a:any) => a.name === p.name)?.id;
-            const users = (game as Game).users?.contents;
+            const transformedID = (game as foundry.Game).actors?.find((a:any) => a.name === p.name)?.id;
+            const users = (game as foundry.Game).users?.contents;
             if (transformedID) {
                 if (users) {
                     for (const user of users) {
@@ -31,7 +31,7 @@ export class DND5e {
 
     async _revertForm(transformed: Actor) {
         const originalId = transformed["flags"].dnd5e.originalActor;
-        const users = (game as Game).users?.contents;
+        const users = (game as foundry.Game).users?.contents;
         if (users) {
             for (const user of users) {
                 if (user.character?.id === transformed.id) {

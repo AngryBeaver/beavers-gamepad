@@ -5,10 +5,12 @@
  * each user instance can be dragged and rotated to position it.
  * the app needs to be very small. in place dropdown ?
  * */
-import {GamepadSettings,NAMESPACE} from "../GamepadSettings.js";
+import {NAMESPACE} from "../definitions.js";
+import {GamepadSettings} from "../GamepadSettings.js";
 import {TinyUserInterfaceGamepadModule} from "../modules/TinyUserInterfaceGamepadModule.js";
+const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
 
-export class TinyUserInterface extends Application implements TinyUserInterfaceI {
+export class TinyUserInterface extends HandlebarsApplicationMixin(ApplicationV2) implements TinyUserInterfaceI {
 
     _data: {
         userId: string,
@@ -22,8 +24,8 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
     hook:number
 
 
-    constructor(userId: string, options: any = {}) {
-        super(options);
+    constructor(userId: string) {
+        super({id:`${NAMESPACE}-tiny-ui-${userId}`});
         this._settings = (game as ExtendedGame)[NAMESPACE].Settings as GamepadSettings
         this._data = {
             userId: userId,
@@ -32,11 +34,9 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
             html: null,
             glow:false,
         };
-        const userData = this._settings.getUserData(userId);
-        if (this.element.length > 0) {
-            this.bringToTop();
+        if ((this as any).rendered) {
+            (this as any).bringToTop?.();
         }
-        this.setPosition({top:userData.top||0,left:userData.left||0});
         this.hook = Hooks.on("updateUser", async function(user:any){
             if(user.id === userId) {
                 // @ts-ignore
@@ -45,24 +45,52 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         }.bind(this));
     }
 
-    static get defaultOptions() {
-        return mergeObject(super.defaultOptions, {
-            // @ts-ignore
-            //title: game.i18n.localize(`beaversCrafting.crafting-app.title`),
+    static DEFAULT_OPTIONS = {
+        id: NAMESPACE+"tiny-ui",
+        classes: [NAMESPACE, "tiny-user-interface"],
+        tag: "div",
+        position: {
             width: 240,
-            height: 60,
-            template: `modules/${NAMESPACE}/templates/tiny-ui.hbs`,
-            closeOnSubmit: false,
-            submitOnClose: false,
-            submitOnChange: false,
+            height: 60
+        },
+        window: {
             resizable: false,
-            classes: [NAMESPACE, "tiny-user-interface"],
-            popOut: false,
-            id: NAMESPACE
-        });
+            title: `tiny-ui`,
+            frame: false,
+        }
     }
 
-    close(options?: Application.CloseOptions): Promise<void> {
+    static PARTS = {
+        content: {
+            template: `modules/${NAMESPACE}/templates/tiny-ui.hbs`,
+        }
+    }
+
+    async render(forceOrOptions?: any): Promise<any> {
+        const opts = typeof forceOrOptions === 'boolean' ? { force: forceOrOptions } : (forceOrOptions ?? {});
+        return super.render(opts);
+    }
+
+    async _prepareContext(options: any = {}): Promise<any> {
+        return this.getData(options);
+    }
+
+    mySetPosition(position: { top?: number; left?: number }) {
+        const el: HTMLElement | undefined = (this as any).element as HTMLElement;
+        if (el) {
+            el.style.position = 'absolute';
+            if (typeof position.top === 'number') el.style.top = `${Math.max(position.top, 0)}px`;
+            if (typeof position.left === 'number') el.style.left = `${Math.max(position.left, 0)}px`;
+        }
+        return this;
+    }
+
+    getStoredPosition(){
+        const userData = this._settings.getUserData(this._data.userId);
+        return { top:  Math.min(document.body.offsetHeight-40,Math.max(userData.top, 0)),left: Math.min(document.body.offsetWidth-180,Math.max(userData.left,0))}
+    }
+
+    close(options?: any): Promise<void> {
         const result = super.close(options);
         Hooks.off("updateUser",this.hook);
         return result;
@@ -83,39 +111,46 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         }
     }
 
-    activateListeners(html:any) {
+    setPosition(options: any) {
+        if( this.element.parentElement) {
+            super.setPosition(options)
+        }
+    }
+
+    _onRender(context:any, options:any) {
+        this.setPosition(this.getStoredPosition());
+        const html = this.element as HTMLElement;
         this._data.html = html;
-        html.find(".selection").on("wheel", (e:any) => {
-            if (e.originalEvent.deltaY > 0) {
-                this.rotateWheel(1);
-            }
-            if (e.originalEvent.deltaY < 0) {
-                this.rotateWheel(-1);
-            }
+        html.querySelectorAll('.selection').forEach(el => {
+            el.addEventListener('wheel', (e: any) => {
+                const deltaY = (e as WheelEvent).deltaY ?? (e.originalEvent?.deltaY ?? 0);
+                if (deltaY > 0) this.rotateWheel(1);
+                if (deltaY < 0) this.rotateWheel(-1);
+            });
         });
-        html.find("a.up").on("click", (e:any) => {
-            this.rotateWheel(1);
-        });
-        html.find("a.down").on("click", (e:any) => {
-            this.rotateWheel(-1);
-        });
-        html.find(".select").on("click", (e:any) => {
-            const id = $(e.currentTarget).data().key;
+        html.querySelectorAll('a.up').forEach(el => el.addEventListener('click', () => this.rotateWheel(1)));
+        html.querySelectorAll('a.down').forEach(el => el.addEventListener('click', () => this.rotateWheel(-1)));
+        html.querySelectorAll('.select').forEach(el => el.addEventListener('click', (e: any) => {
+            const target = e.currentTarget as HTMLElement;
+            const id = (target.dataset as any).key;
             this._choose(id);
-        });
-        html.find('.drag-me').on("mousedown", (e:any) => {
-            const app = $(e.currentTarget).parent(".beavers-tiny-ui");
-            dragElement(e,app[0])
-                .then(x=>{
-                    this._settings.setUserData(this._data.userId,x)
+        }));
+        html.querySelectorAll('.drag-me').forEach(el => el.addEventListener('mousedown', (e: any) => {
+            const appEl = (e.currentTarget as HTMLElement).closest('.beavers-tiny-ui') as HTMLElement;
+            if (!appEl) return;
+            dragElement(e, appEl)
+                .then(x => {
+                    const current:UserData =  this._settings.getUserData(this._data.userId);
+                    const diff = {top:current.top+x.top,left:current.left+x.left};
+                    this._settings.setUserData(this._data.userId, diff)
                 });
-        });
-        Object.entries(this._data.selectData.choices).forEach(([key,value],index)=>{
-            if(key === this._data.selectData.selected){
+        }));
+        Object.entries(this._data.selectData.choices).forEach(([key, value], index) => {
+            if (key === (this._data.selectData as any).selected) {
                 this._data.wheel = index;
                 this.rotateWheel(0);
             }
-       })
+        });
     }
 
     public async select(selectData: SelectData):Promise<string> {
@@ -128,12 +163,12 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
             promise = dfd.promise.then(x=>{
                 this._data.glow = false;
                 (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
-                return this._render(true).then(y=>x);
+                return this.render(true).then(y=>x);
             })
         }
         this._data.selectData = selectData
         this._data.resolve = dfd.resolve;
-        await this._render(true);
+        await this.render(true);
         return promise;
     }
 
@@ -145,8 +180,10 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
         this._data.wheel += count;
         const length = Object.values(this._data.selectData.choices).length;
         this._data.wheel = Math.min(length - 1, Math.max(0, this._data.wheel))
-        const top = 7 - this._data.wheel * 21;
-        this._data.html.find(".wheel").css({top: top});
+        const top = 7 - this._data.wheel * 16;
+        const root: HTMLElement | null = this._data.html as any;
+        const wheelEl = root ? (root.querySelector('.wheel') as HTMLElement) : null;
+        if (wheelEl) wheelEl.style.top = `${top}px`;
     }
 
     /**
@@ -176,7 +213,7 @@ export class TinyUserInterface extends Application implements TinyUserInterfaceI
     async _reset() {
         this._data.selectData = {choices:{}};
         this._data.wheel = 0;
-        return this._render(true);
+        return this.render(true);
     }
 
 }

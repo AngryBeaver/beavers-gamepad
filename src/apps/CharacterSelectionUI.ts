@@ -1,4 +1,4 @@
-import {NAMESPACE, SOCKET_UPDATE_USER} from "../GamepadSettings.js";
+import {NAMESPACE, SOCKET_UPDATE_USER} from "../definitions.js";
 
 export class CharacterSelectionUI implements UIModule {
     name = "beavers-character-selection"

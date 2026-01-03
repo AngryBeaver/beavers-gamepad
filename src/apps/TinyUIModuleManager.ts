@@ -1,5 +1,5 @@
 import {TinyUserInterface} from "./TinyUserInterface.js";
-import {NAMESPACE} from "../GamepadSettings.js";
+import {NAMESPACE} from "../definitions.js";
 
 export class TinyUIModuleManager implements TinyUIModuleManagerI{
 
@@ -36,14 +36,10 @@ export class TinyUIModuleManager implements TinyUIModuleManagerI{
     updateUIModules(){
         const uiData = (game as ExtendedGame)[NAMESPACE].Settings.getUIData();
         for(const [userId,userData] of Object.entries(uiData)){
-            if(userData.enableUI){
-                if(this._data.instances[userId]){
-                    this._data.instances[userId].render(true);
-                }else{
-                    this.addInstance(userId);
-                }
+            if(this._data.instances[userId]){
+                this._data.instances[userId].render(true);
             }else{
-                this.removeInstance(userId);
+                this.addInstance(userId);
             }
         }
     }

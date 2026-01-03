@@ -1,9 +1,10 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
-
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../definitions.js";
 /**
  * this is the configuration module that allows to add and delete and configure gamepadmodules
  */
-export class UIConfigApp extends FormApplication {
+const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
+
+export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     gamepadModules: {
         [key:string]:GamepadModule
@@ -16,31 +17,44 @@ export class UIConfigApp extends FormApplication {
         this.hook = Hooks.on(HOOK_GAMEPAD_CONNECTED, this.render.bind(this));
     }
 
-
-    static get defaultOptions(): any {
-        const title = (game as foundry.Game).i18n?.localize("beaversGamepad.uiConfigApp.title");
-        return mergeObject(super.defaultOptions, {
-            title: title,
-            template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
-            id: NAMESPACE+"ui-config",
-            width: 600,
-            height: 600,
-            resizable:true,
+    static DEFAULT_OPTIONS = {
+        id: NAMESPACE+"ui-config",
+        classes: [NAMESPACE,"ui-config","standard-form","beavers-settings"],
+        tag: "div",
+        form: {
             submitOnChange:false,
             submitOnClose:true,
-            classes:  [NAMESPACE,"ui-config"]
-        })
+        },
+        position: {
+            width: 600
+        },
+        window: {
+            resizable:true,
+        }
+    }
+    static PARTS = {
+        form: {
+            template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
+        }
+    }
+    get title(){
+        return (game as foundry.Game).i18n?.localize("beaversGamepad.uiConfigApp.title");
     }
 
-    async getData(options: any): Promise<any> {
+
+    async _prepareContext(options:any): Promise<any> {
         return {
             users: (game as ExtendedGame).users?.contents.reduce((a: any, v: { id: any; }) => ({ ...a, [v.id]: v}), {}) || {},
             uiData: (game as ExtendedGame)[NAMESPACE].Settings.getUIData(),
+            positionChoices: ["bottom", "left", "right", "top"]
         }
     }
 
+    _onRender(context: any, options:any){
+        const html = $(this.element);
+        this.activateListeners(html);
+    }
     activateListeners(html:any) {
-        super.activateListeners(html);
         html.find('button[type=submit]').on("click",(e:any)=>{
             this.close();
         });
@@ -108,7 +122,6 @@ export class UIConfigApp extends FormApplication {
             await (game as ExtendedGame)[NAMESPACE].Settings.setUserData(userId, { top, left });
             this.render();
         });
-
     }
 
     async _updateObject(event: Event, formData: any | undefined) {

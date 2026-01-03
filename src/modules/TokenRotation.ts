@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../GamepadSettings.js";
+import {NAMESPACE} from "../definitions.js";
 import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
 
 export class TokenRotation {
@@ -42,7 +42,7 @@ export class TokenRotation {
         const userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
         this._data.userPosition = userData.userPosition;
         this._data.userId = gamepadConfig.userId;
-        const user = (game as Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
+        const user = (game as foundry.Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
         this._data.actorId = user?.character?.id;
     }
 
@@ -61,7 +61,7 @@ export class TokenRotation {
         const axes = this.getAxes(event, this.X_AXES, this.Y_AXES, this._data.userPosition);
         if (Math.abs(axes.y) + Math.abs(axes.x) > 0.3) {
             // @ts-ignore
-            const token:Token = (canvas as Canvas).tokens?.objects?.children.find(token => this._data.actorId?.endsWith(token.actor?.id) );
+            const token:Token = canvas.tokens?.objects?.children.find(token => this._data.actorId?.endsWith(token.actor?.id) );
             if(token){
                 // @ts-ignore
                 token.rotate(this.getDegree(axes),0);

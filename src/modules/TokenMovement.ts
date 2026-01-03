@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../GamepadSettings.js";
+import {NAMESPACE} from "../definitions.js";
 
 export class TokenMovement implements TokenMovementInstance{
 
@@ -53,7 +53,7 @@ export class TokenMovement implements TokenMovementInstance{
     public updateGamepadConfig(gamepadConfig: GamepadConfig){
         this.config = TokenMovement.defaultConfig;
         this.config.binding = gamepadConfig.modules[this.config.id].binding;
-        const user = (game as Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
+        const user = (game as foundry.Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
         this.userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
         if(user?.character?.id) {
             this.initialize(user.character.uuid);
@@ -99,7 +99,7 @@ export class TokenMovement implements TokenMovementInstance{
         if(this.isMoving){
             return
         }
-        if (!(canvas instanceof Canvas)) {
+        if (!canvas) {
             throw new Error("TokenMovement called before canvas has been initialized");
         }
         if((game as ExtendedGame).paused){
@@ -178,7 +178,7 @@ export class TokenMovement implements TokenMovementInstance{
 
     private _getToken():Token {
         // @ts-ignore
-        const token:Token = (canvas as Canvas).tokens?.objects?.children.find((token:any) => this.actorId.endsWith(token?.actor?.uuid) );
+        const token:Token = canvas.tokens?.objects?.children.find((token:any) => this.actorId.endsWith(token?.actor?.uuid) );
         // @ts-ignore
         if(token.id !== this.token?.id) {
             this.position = undefined;
@@ -196,14 +196,12 @@ export class TokenMovement implements TokenMovementInstance{
             const x = Math.round(token.x/size)*size;
             // @ts-ignore
             const y = Math.round(token.y/size)*size;
-            const center = token.getCenter(x, y);
+            const point = {x:x,y:y};
+            const center = token.getCenterPoint(point);
             this.position ={
                 // @ts-ignore
                 collision:token.getMovementAdjustedPoint(center),
-                point:{
-                    x : x,
-                    y : y
-                },
+                point:point,
                 size: size
             }
         }
@@ -211,7 +209,7 @@ export class TokenMovement implements TokenMovementInstance{
     }
 
     private _checkSceneCollision(collisionPoint:any) {
-        if (!(canvas instanceof Canvas)) {
+        if (!(canvas instanceof foundry.canvas.Canvas)) {
             throw new Error("TokenMovement called before canvas has been initialized");
         }
         // @ts-ignore

@@ -1,4 +1,4 @@
-import {NAMESPACE} from "../GamepadSettings.js";
+import {NAMESPACE} from "../definitions.js";
 import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
 
 export class TinyUserInterfaceGamepadModuleActivate {

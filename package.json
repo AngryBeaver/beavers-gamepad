@@ -1,12 +1,12 @@
 {
 	"name": "beavers-gamepad",
 	"title": "Beaver's Gamepad",
-	"version": "2.1.2",
+	"version": "3.0.0",
 	"description": "For controlling actors while playing locally on a central map monitor",
-    "devDir": "c:\\vtts\\v13.347\\Data\\modules",
+    "devDir": "c:\\vtts\\v13.348\\Data\\modules",
     "#devDir": "c:\\vtts\\v12.331\\Data\\modules",
     "#devDir": "c:\\vtts\\v11.315\\Data\\modules",
-	"main": "src/main.js",
+	"main": "src/beavers-gamepad.js",
 	"scripts": {
 		"type": "npx -p typescript tsc src/types.ts --declaration --emitDeclarationOnly --outDir dist/src",
 		"build": "npx gulp",

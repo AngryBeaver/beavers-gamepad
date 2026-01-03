@@ -2,7 +2,7 @@
   "title": "Beaver's Gamepad",
   "description": "For controlling actors while playing locally on a central map monitor",
   "id": "beavers-gamepad",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "socket": true,
   "authors": [
     {
@@ -18,7 +18,7 @@
     }
   ],
   "esmodules": [
-    "src/main.js"
+    "src/beavers-gamepad.js"
   ],
   "styles": [
     "css/gamepad.css"
@@ -56,8 +56,7 @@
     ]
   },
   "compatibility": {
-    "minimum": "11",
-    "verified": "13",
-    "maximum": "13"
+    "minimum": "13",
+    "verified": "13"
   }
 }

@@ -90,7 +90,6 @@ interface UIData {
 
 interface UserData {
     userPosition: string,
-    enableUI: boolean,
     top: number,
     left: number,
     [key: string]: any

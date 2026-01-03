@@ -1,22 +1,25 @@
 import {BeaversGamepadManager} from "./apps/BeaversGamepadManager.js";
-import {GamepadSettings, HOOK_READY, NAMESPACE, SOCKET_UPDATE_USER} from "./GamepadSettings.js";
+import {HOOK_READY, NAMESPACE, SOCKET_UPDATE_USER} from "./definitions.js";
+import {GamepadSettings} from "./GamepadSettings.js";
 import {DND5e} from "./systems/DND5e.js";
 import {GamepadModuleManager} from "./apps/GamepadModuleManager.js";
 import {TinyUIModuleManager} from "./apps/TinyUIModuleManager.js";
 import {TinyUserInterfaceGamepadModule} from "./modules/TinyUserInterfaceGamepadModule.js";
 import {TinyUserInterfaceGamepadModuleActivate} from "./modules/TinyUserInterfaceGamepadModuleActivate.js";
 import {CharacterSelectionUI} from "./apps/CharacterSelectionUI.js";
+import {OpenDoorUI} from "./apps/OpenDoorUI.js";
+import {OpenDoorGamepadModule} from "./modules/OpenDoorGamepadModule.js";
 import {TokenRotation} from "./modules/TokenRotation.js";
 import {TokenMovement} from "./modules/TokenMovement.js";
 
 Hooks.on("ready", async function(){
+
     setTimeout(()=>{
         game[NAMESPACE]=game[NAMESPACE]||{};
         game[NAMESPACE].GamepadManager = new BeaversGamepadManager();
         game[NAMESPACE].GamepadModuleManager = new GamepadModuleManager();
         game[NAMESPACE].TinyUIModuleManager = new TinyUIModuleManager();
         game[NAMESPACE].Settings = new GamepadSettings();
-
         if(game['system'].id === 'dnd5e'){
             new DND5e();
         }
@@ -25,6 +28,8 @@ Hooks.on("ready", async function(){
         game[NAMESPACE].TinyUIModuleManager.updateUIModules();
         const csUI = new CharacterSelectionUI();
         game[NAMESPACE].TinyUIModuleManager.addModule(csUI.name,csUI);
+        const odUI = new OpenDoorUI();
+        game[NAMESPACE].TinyUIModuleManager.addModule(odUI.name, odUI);
 
         if(!game[NAMESPACE].socket){
             ui.notifications.warn("Parts of beavers-gamepad won't work when module socketlib is not enabled")
@@ -41,6 +46,7 @@ Hooks.on(HOOK_READY, async function(manager){
     manager.registerGamepadModule(TinyUserInterfaceGamepadModule);
     manager.registerGamepadModule(TinyUserInterfaceGamepadModuleActivate);
     manager.registerGamepadModule(TokenRotation);
+    manager.registerGamepadModule(OpenDoorGamepadModule);
 })
 
 Hooks.once("socketlib.ready", () => {

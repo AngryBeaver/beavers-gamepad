@@ -1,9 +1,10 @@
-import {ACTOR_FILTER, HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
+import {ACTOR_FILTER, HOOK_GAMEPAD_CONNECTED,NAMESPACE} from "../definitions.js";
+const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
 
 /**
  * this is the configuration module that allows to add and delete and configure gamepadmodules
  */
-export class GamepadConfigApp extends FormApplication {
+export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     gamepadModules: {
         [key: string]: GamepadModule;
@@ -18,23 +19,33 @@ export class GamepadConfigApp extends FormApplication {
         });
     }
 
-    static get defaultOptions(): any {
-        const title = (game as foundry.Game).i18n?.localize("beaversGamepad.gamepadConfigApp.title");
-        return mergeObject(super.defaultOptions, {
-            title: title,
-            template: `modules/${NAMESPACE}/templates/gamepad-config.hbs`,
-            id: NAMESPACE+"-config",
-            width: 600,
-            height: 600,
-            resizable:false,
-            submitOnChange:true,
+    static DEFAULT_OPTIONS = {
+        id: NAMESPACE+"-config",
+        classes: [NAMESPACE,"gamepad-config","standard-form","beavers-settings"],
+        tag: "div",
+        form: {
+            submitOnChange:false,
             submitOnClose:true,
-            closeOnSubmit:false,
-            classes:  [NAMESPACE,"gamepad-config"]
-        })
+        },
+        position: {
+            width: 600
+        },
+        window: {
+            resizable:false,
+        }
     }
 
-    async getData(options: any): Promise<any> {
+    static PARTS = {
+        form: {
+            template: `modules/${NAMESPACE}/templates/gamepad-config.hbs`,
+        }
+    }
+
+    get title(){
+        return (game as foundry.Game).i18n?.localize("beaversGamepad.gamepadConfigApp.title");
+    }
+
+    async _prepareContext(options:any): Promise<any> {
         // @ts-ignore
         const filter = game[NAMESPACE].Settings.get(ACTOR_FILTER);
         const actors = (game as foundry.Game).actors?.filter((a: Actor)=>a.type===filter)||[];
@@ -49,9 +60,11 @@ export class GamepadConfigApp extends FormApplication {
             actors: actors,
         }
     }
-
+    _onRender(context: any, options:any){
+        const html = $(this.element);
+        this.activateListeners(html);
+    }
     activateListeners(html:JQuery<HTMLElement>): void {
-        super.activateListeners(html);
         html.find('.addGamepadModule').on("click",e=>{
             const id = $(e.currentTarget).data("id");
             this.addGamepadModule(id);
@@ -85,8 +98,7 @@ export class GamepadConfigApp extends FormApplication {
 
     protected _updateObject(event: Event, formData: object | undefined): Promise<unknown> {
         if(formData != undefined) {
-            // @ts-ignore
-            return (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(formData as GamepadConfigs)
+            return (game as ExtendedGame)[NAMESPACE].Settings.updateGamepadConfigs(formData as GamepadConfigs)
         }
         return Promise.resolve("");
     }
@@ -103,8 +115,7 @@ export class GamepadConfigApp extends FormApplication {
         const selectedId = await beaversSystemInterface.uiDialogSelect(selectData);
         const data:any = {}
         data[gamepadIndex+'.modules.'+selectedId] = this.gamepadModules[selectedId].defaultConfig;
-        // @ts-ignore
-        (game as Game)[NAMESPACE].Settings.updateGamepadConfigs(data).then(()=>{
+        (game as ExtendedGame)[NAMESPACE].Settings.updateGamepadConfigs(data).then(()=>{
             this.render()
         });
     }

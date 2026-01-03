@@ -1,4 +1,4 @@
-<form autocomplete="off">
+<form class="main" autocomplete="off">
     <div class="flexcol" style="margin-bottom:5px;">
         {{#unless this.hasGamepadConfigs}}
             <div style="box-shadow:0 0 0 1px #c9ba9b inset, 0 0 0 0 transparent;background-color: #fffaf3;
@@ -13,12 +13,12 @@
         </div>
     </div>
     {{#each gamepadConfigs}}
-        <h2>{{this.gamepadId}}-{{@key}}</h2>
-        <div style="margin:0px 20px 20px 20px">
+        <fieldset style="margin:5px 0px">
+            <legend>{{this.gamepadId}}-{{@key}}</legend>
+            {{#if this.userId}}
             <div class="form-group">
                 <label>{{localize "beaversGamepad.gamepadConfigApp.user"}}</label>
                 <div class="form-fields">
-                    {{#if this.userId}}
                         <div style="padding-right:20px;
                                 text-indent: 20px;
                                 background-size: 18px 18px;
@@ -27,43 +27,40 @@
                                 background-image:url('{{lookup (lookup ../users this.userId) "avatar"}}')">{{lookup
                                 (lookup ../users this.userId) "name"}}</div>
                         <input name="{{@key}}.userId" type="hidden" value="{{this.userId}}">
-                        <a class="removeUser" style="flex:0" data-id="{{@key}}">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    {{else}}
-                        <button data-id="{{@key}}" class="addUser" style="min-width:100%">
-                            <i class="fas fa-user"></i>
-                            {{localize "beaversGamepad.gamepadConfigApp.addUser"}}
-                        </button>
-                    {{/if}}
                 </div>
-                <p class="notes">
+                <button class="removeUser" style="flex:0" data-id="{{@key}}">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <p class="notes hint">
                     {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
                 </p>
             </div>
             {{#each this.modules}}
-                <div class="flexcol"
-                     style="border-radius:10px;border:2px groove #FFF;padding:5px 10px 10px;margin-bottom:10px">
-                    <div class="form-group" style="margin-bottom:20px;">
-                        <label style="font-weight:800;"><div>{{this.name}}</div></label>
-                        <div class="form-fields">
+                <fieldset style="margin:5px 0px">
+                    <legend>
+                        {{this.name}}
                         <a class="delete" style="flex:0" data-id="{{@../key}}" data-module="{{@key}}">
                             <i class="fas fa-trash"></i>
                         </a>
-                        </div>
-                        <p class="notes">
+                    </legend>
+                    <div class="form-group">
+                        <p class="notes hint">
                             {{localize this.desc}}
                         </p>
                     </div>
                     {{#each this.binding.axes}}
-                        <div class="flexrow">
-                            <div style="width:120px;margin-right:5px">{{@key}}:</div>
+                        <div class="form-group">
+                            <label>{{@key}}:</label>
+                            <div class="form-fields">
                             <input type="number" name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.index"
                                    value="{{this.index}}"/>
-                            <div style="width:120px;margin:0px 5px">{{localize
-                                    "beaversGamepad.gamepadConfigApp.reversedLabel"}}</div>
-                            <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.reversed"
-                                   type="checkbox" {{#if this.reversed}}checked{{/if}}/>
+                            </div>
+                            <label>{{localize
+                                    "beaversGamepad.gamepadConfigApp.reversedLabel"}}</label>
+                            <div class="form-fields">
+                                <input name="{{@../../key}}.modules.{{@../key}}.binding.axes.{{@key}}.reversed"
+                                       type="checkbox" {{#if this.reversed}}checked{{/if}}/>
+                            </div>
                         </div>
                     {{/each}}
                     {{#each this.binding.buttons}}
@@ -75,10 +72,21 @@
                         </div>
                         </div>
                     {{/each}}
-                </div>
+                </fieldset>
             {{/each}}
-            <button data-id="{{@key}}" class="addGamepadModule">{{localize
+            <footer class="form-footer">
+                <button type="button" data-id="{{@key}}" class="addGamepadModule">{{localize
                     "beaversGamepad.gamepadConfigApp.addModule"}}</button>
-        </div>
+            </footer>
+            {{else}}
+                <p class="notes hint">
+                    {{localize "beaversGamepad.gamepadConfigApp.userHint"}}
+                </p>
+                <button type="button" data-id="{{@key}}" class="addUser" style="min-width:100%">
+                    <i class="fas fa-user"></i>
+                    {{localize "beaversGamepad.gamepadConfigApp.addUser"}}
+                </button>
+            {{/if}}
+        </fieldset>
     {{/each}}
 </form>

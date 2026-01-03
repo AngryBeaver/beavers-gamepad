@@ -1,4 +1,4 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
+import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../definitions.js";
 
 /**
  * here are physical gamepads registered

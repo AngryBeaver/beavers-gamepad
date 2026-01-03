@@ -11,19 +11,21 @@ Initially this module comes with a collection of submodules that let you choose 
 ![img.png](pictures/tinyUI.png)
 
 ### GamepadModules
-beavers-gamepad is Built as Framework to host submodules named GamepadModules.
+beavers-gamepad is built as framework to host submodules named GamepadModules.
 GamepadModules then assignes actions to axes or buttons.
-Initially at least four GamepadModules are available 
+beavers-gamepad provides at least five GamepadModules:
 - "Beaver's Token movement" which allows to move a token around.
 - "Beaver's Token rotation" which allows to rotate a token.
+- "Beavers open doors" open nearest door in close range same as in tinyUIModule
 - "Activate Tiny-User-Interface" which activates a user Context menu.
 - "Conroll Tiny-User-Interfacet" which controls the tiny-user-interface.
 
 ### TinyUIModules
-Tiny-User-Interface is also built as Framework to host submodules names TinyUIModules.
+Tiny-User-Interface is also built as framework to host submodules named TinyUIModules.
 TinyUIModules allow simple interactions with the user.
-beavers-gamepad provide at least one module:
+beavers-gamepad provides at least two TinyUIModules:
 - "Beavers Character Selection" with this context you can choose and select another actor to control.
+- "Beavers open doors" open nearest door in close range. When token is allowed to rotate e.g. LockArtWorkRotation is not enabled it will only detect doors in front arc. Works best if the initial token uses a top down image that is facing to the bottom.
 
 ## How To
 ### Example UserManagement
@@ -61,12 +63,15 @@ Then you can add gamepadModules to this controller
 _The amount of GamepadModules can vary depending on vtt-modules installed.
 Other VTT-modules can add own gamepad-modules here if they implement the interface and register that gamepadmodule._
 
-_Initially there are at least three modules you should add:_
+_This Module includes five Gamepad Submodules you could add:_
 - _Beavers-Token-Movement (moves a token around)_
+- _Beavers-Token-Rotation (rotates a token)_
 - _Tiny-User-Interface Control (controls a user defined context)_
 - _Tiny-User-Interface Activation (activates the tiny user interface)_
+- _Beavers-Open-Doors (opens nearest door in close range)_
 
-You should add all 3 Modules Each module comes with its own configuration
+You could add all 5 Modules Each module comes with its own configuration
+
 ![img.png](pictures/basisModules.png)
 
 _In each configuration Section you can configure which axis and what buttons to use._
