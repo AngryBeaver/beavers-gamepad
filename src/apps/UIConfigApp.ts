@@ -4,6 +4,23 @@ import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../definitions.js";
  */
 const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
 
+function parseNamePrefixAndValue(
+    e: JQuery.TriggeredEvent,
+    suffix: string
+): { id: string; value: string } | null {
+    const $el = $(e.currentTarget as HTMLElement);
+    const name = $el.attr('name') || '';
+    const re = new RegExp(`^([^.]*)\\.${suffix.replace('.', '\\.')}$`);
+    const m = name.match(re);
+    if (!m) return null;
+
+    return {
+        id: m[1],
+        value: String($el.val() ?? '')
+    };
+}
+
+
 export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     gamepadModules: {
@@ -21,10 +38,6 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         id: NAMESPACE+"ui-config",
         classes: [NAMESPACE,"ui-config","standard-form","beavers-settings"],
         tag: "div",
-        form: {
-            submitOnChange:false,
-            submitOnClose:true,
-        },
         position: {
             width: 600
         },
@@ -33,7 +46,7 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     }
     static PARTS = {
-        form: {
+        content: {
             template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
         }
     }
@@ -46,7 +59,7 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return {
             users: (game as ExtendedGame).users?.contents.reduce((a: any, v: { id: any; }) => ({ ...a, [v.id]: v}), {}) || {},
             uiData: (game as ExtendedGame)[NAMESPACE].Settings.getUIData(),
-            positionChoices: ["bottom", "left", "right", "top"]
+            positionChoices: {"bottom":"bottom", "left":"left", "right":"right", "top":"top"}
         }
     }
 
@@ -55,7 +68,7 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.activateListeners(html);
     }
     activateListeners(html:any) {
-        html.find('button[type=submit]').on("click",(e:any)=>{
+        html.find('button.save').on("click",(e:any)=>{
             this.close();
         });
         html.find('.addUser').on("click",(e:any)=>{
@@ -77,6 +90,31 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             );
         });
+        html.find('input[name$=".userPosition"]').on("change",(e:any)=>{
+            const parsed = parseNamePrefixAndValue(e, 'userPosition');
+            if(parsed) {
+                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {userPosition: parsed.value})
+                    .catch(console.error);
+                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
+            }
+        });
+        html.find('input[name$=".top"]').on("change",(e:any)=>{
+            const parsed = parseNamePrefixAndValue(e, 'top');
+            if(parsed) {
+                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {top: parsed.value})
+                    .catch(console.error);
+                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
+            }
+        });
+        html.find('input[name$=".left"]').on("change",(e:any)=>{
+            const parsed = parseNamePrefixAndValue(e, 'left');
+            if(parsed) {
+                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {left: parsed.value})
+                    .catch(console.error);
+                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
+            }
+        });
+
         // Center button handler
         html.find('.center-user-pos').on("click", async (e:any) => {
             const userId: string = $(e.currentTarget).data("id");
@@ -120,6 +158,7 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             await (game as ExtendedGame)[NAMESPACE].Settings.setUserData(userId, { top, left });
+            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
             this.render();
         });
     }
@@ -134,6 +173,8 @@ export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
             (game as ExtendedGame)[NAMESPACE].Settings.setUIData(uiData as UIData,{updateUI:true})
         }
     }
+
+
 
     async close(options?: FormApplication.CloseOptions): Promise<void>{
         super.close(options);

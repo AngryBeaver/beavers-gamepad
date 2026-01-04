@@ -23,10 +23,6 @@ export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
         id: NAMESPACE+"-config",
         classes: [NAMESPACE,"gamepad-config","standard-form","beavers-settings"],
         tag: "div",
-        form: {
-            submitOnChange:false,
-            submitOnClose:true,
-        },
         position: {
             width: 600
         },
@@ -94,13 +90,6 @@ export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
             });
         });
 
-    }
-
-    protected _updateObject(event: Event, formData: object | undefined): Promise<unknown> {
-        if(formData != undefined) {
-            return (game as ExtendedGame)[NAMESPACE].Settings.updateGamepadConfigs(formData as GamepadConfigs)
-        }
-        return Promise.resolve("");
     }
 
     async addGamepadModule(gamepadIndex:string){
