@@ -1,6 +1,4 @@
 node_modules
-/foundryconfig.json
-/beavers-system-interface.iml
-/.idea/
 /dist/
 /package/
+/.idea/

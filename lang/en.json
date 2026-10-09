@@ -1,54 +1,83 @@
 {
   "beaversGamepad": {
     "errors": {
-      "UserHasNoGamepad": "No gamepad associated with user"
+      "UserHasNoGamepad": "No gamepad associated with user",
+      "noGamemaster": "Beaver's Gamepad: a gamemaster needs to be connected to change the character of a user."
     },
     "settings": {
       "uiConfig": {
         "name": "User Configuration",
-        "hint": "Configure userdata for this client",
-        "label": "\uD83D\uDC65 User Configuration"
+        "hint": "Where the players sit around this screen and where their Tiny-User-Interface is shown.",
+        "label": "Configure users"
       },
-      "gamepadConfig":{
+      "gamepadConfig": {
         "name": "Gamepad Configuration",
-        "hint": "Configure the gamepads",
-        "label": "\uD83C\uDFAE configure"
-      },
-      "actorFilter":{
-        "name": "Actor Filter Type",
-        "hint": "the filter type to select an actor for a gamepad"
+        "hint": "Assign the connected gamepads to users and choose what their sticks and buttons do.",
+        "label": "Configure gamepads"
       }
     },
+    "position": {
+      "bottom": "bottom",
+      "left": "left",
+      "right": "right",
+      "top": "top"
+    },
     "gamepadConfigApp": {
-      "title": "GamepadConfig",
-      "noGamepad": "No connected gamepads detected." ,
-      "info": "Press a button on a gamepad to connect it",
-      "user": "User:",
-      "addUser": "assign User",
-      "userHint": "Each gamepad needs to be assigned to an user.",
-      "actorLabel": "Actor:",
-      "reversedLabel": "Reversed:",
-      "addModule": "add gamepad module"
+      "title": "Gamepad Configuration",
+      "noGamepad": "No connected gamepads detected.",
+      "info": "Press a button on a gamepad to connect it. A row lights up while its button or stick is in use.",
+      "user": "User",
+      "noUser": "- not assigned -",
+      "userHint": "The user that plays with this gamepad. It moves the token of the character of that user.",
+      "identify": "Let this gamepad rumble",
+      "reversedLabel": "reversed",
+      "addModule": "Add gamepad module",
+      "deleteModule": "Remove this module from the gamepad",
+      "missingModule": "The vtt-module that provides this gamepad module is not active.",
+      "detect": "detect",
+      "detectAll": "Detect all sticks and buttons of this module one after the other",
+      "raw": "Browser sees {buttonCount} buttons and {axisCount} axes. Pressed buttons: {pressed}. Moved axes: {moved}.",
+      "rawNone": "none",
+      "rawMissing": "The browser does not report this gamepad right now, press one of its buttons.",
+      "rawHint": "What the browser receives from this gamepad right now. A stick or button that does not show up here is not sent as gamepad input and can not be used or detected."
+    },
+    "detect": {
+      "button": "Press the button on the gamepad that you want to use.",
+      "right": "Push the stick that you want to use to your right.",
+      "down": "Pull the stick that you want to use towards you.",
+      "any": "Move the stick or trigger that you want to use.",
+      "release": "Got it, now let go.",
+      "cancel": "cancel",
+      "timeout": "Beaver's Gamepad: nothing detected. The line below the name of the gamepad shows what the browser receives from it."
     },
     "uiConfigApp": {
       "title": "User Configuration",
-      "info": "This UserConfiguration is not global and only valid for the currently connected client",
-      "userPosition": "User Position:",
-      "userPositionHint": "When the monitor is lying on the table the position of the player towards the monitor e.g. top means he looks from upside down on it.",
-      "userPositionPx": "Display Position top/left:",
-      "userPositionPxHint": "Coordinates of the display on the monitor.",
-      "userPositionPxCenter":"Center Tiny UI based on user position.",
-      "tinyUI": "Enable TinyUserInterface",
-      "tinyUIHint": "A tiny interface on this client screen for the defined user. There can be mutliple interfaces on one client.",
+      "info": "These settings are stored in this browser only: they describe the players sitting around this screen. Every user listed here gets a Tiny-User-Interface on this screen, drag it by its coloured edge.",
+      "userPosition": "Seat",
+      "userPositionHint": "Where the player sits when the screen lies flat on the table, e.g. top means the player looks at it upside down. Sticks and Tiny-User-Interface are turned accordingly.",
+      "userPositionPx": "Display position top/left",
+      "userPositionPxHint": "Coordinates of the Tiny-User-Interface on the screen.",
+      "userPositionPxCenter": "Center the Tiny-User-Interface at the seat of the user.",
       "addUser": "Add user",
-      "addUserHint": ""
+      "addUserHint": "Users that got a gamepad assigned are added automatically.",
+      "removeUser": "Remove the Tiny-User-Interface of this user"
     },
     "TUIGamepadModule": {
       "desc": "This is a context module. When activated it controls the Tiny-User-Interface",
       "desc2": "This module activates Tiny-User-Interface"
     },
+    "TokenMovement": {
+      "desc": "this module allows to move your token"
+    },
     "TokenRotation": {
       "desc": "this module allows to control the direction your token is facing"
+    },
+    "openDoor": {
+      "desc": "this module opens or closes the nearest door in front of your token"
+    },
+    "uiModule": {
+      "characterSelection": "Choose character",
+      "openDoor": "Open / close door"
     }
   }
 }
