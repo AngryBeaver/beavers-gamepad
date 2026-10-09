@@ -1,114 +1,81 @@
-import {NAMESPACE} from "../GamepadSettings.js";
-import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
+import { gamepadApi } from "../definitions";
+import { readAxis, seatAdjust, toDegree } from "../core/axes";
+import { withStoredBinding } from "../core/config";
+import { findUserToken } from "../tokens";
 
 export class TokenRotation {
-
-    public static defaultConfig: GamepadModuleConfig = {
-        binding: {
-            axes: {
-                "horizontal": {
-                    index: "2",
-                    reversed: false
-                },
-                "vertical": {
-                    index: "3",
-                    reversed: false
-                },
-            },
-            buttons: {}
+  public static defaultConfig: GamepadModuleConfig = {
+    binding: {
+      axes: {
+        horizontal: {
+          index: "2",
+          reversed: false,
         },
-        name: "Token Rotation",
-        id: "beavers-token-rotation",
-        desc: "beaversGamepad.TokenRotation.desc"
+        vertical: {
+          index: "3",
+          reversed: false,
+        },
+      },
+      buttons: {},
+    },
+    name: "Token Rotation",
+    id: "beavers-token-rotation",
+    desc: "beaversGamepad.TokenRotation.desc",
+  };
+
+  private _data: {
+    config: GamepadModuleConfig;
+    userPosition: string;
+    userId: string;
+  } = {
+    config: TokenRotation.defaultConfig,
+    userPosition: "bottom",
+    userId: "",
+  };
+
+  private X_AXES = "horizontal";
+  private Y_AXES = "vertical";
+
+  public updateGamepadConfig(gamepadConfig: GamepadConfig) {
+    this._data.config = withStoredBinding(TokenRotation.defaultConfig, gamepadConfig);
+    this._data.userPosition = gamepadApi().Settings.getUserData(gamepadConfig.userId).userPosition;
+    this._data.userId = gamepadConfig.userId;
+  }
+
+  public getConfig(): GamepadModuleConfig {
+    return this._data.config;
+  }
+
+  public tick(event: GamepadTickEvent): boolean {
+    if (event.hasAnyAxesTicked) {
+      this.tickAxes(event);
     }
+    return true;
+  }
 
-    private _data: {
-        config: GamepadModuleConfig,
-        userPosition: string
-        userId: string,
-        actorId?: string,
-    } = {
-        config: TokenRotation.defaultConfig,
-        userPosition: "bottom",
-        userId: "",
+  private tickAxes(event: GamepadTickEvent) {
+    // foundry warns on every attempt to rotate while paused
+    if (game.paused && !game.user.isGM) {
+      return;
     }
-
-    private X_AXES = "horizontal";
-    private Y_AXES = "vertical";
-
-    public updateGamepadConfig(gamepadConfig: GamepadConfig) {
-        this._data.config = TokenRotation.defaultConfig;
-        this._data.config.binding = gamepadConfig.modules[this._data.config.id].binding;
-        const userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(gamepadConfig.userId);
-        this._data.userPosition = userData.userPosition;
-        this._data.userId = gamepadConfig.userId;
-        const user = (game as Game).users?.find((u:User)=>u.id === gamepadConfig.userId);
-        this._data.actorId = user?.character?.id;
+    // the analog values of the stick, not the ticked ones: a token can face any direction.
+    const axes = seatAdjust(
+      {
+        x: readAxis(this._data.config.binding, event.gamepad.axes, this.X_AXES),
+        y: readAxis(this._data.config.binding, event.gamepad.axes, this.Y_AXES),
+      },
+      this._data.userPosition,
+    );
+    if (Math.abs(axes.y) + Math.abs(axes.x) > 0.3) {
+      const degree = (Math.round(toDegree(axes)) + 360) % 360;
+      const token = findUserToken(this._data.userId);
+      if (token && token.document.rotation !== degree) {
+        token.rotate(degree, 0)?.catch?.(console.error);
+      }
     }
+  }
 
-    public getConfig(): GamepadModuleConfig {
-        return this._data.config;
-    }
-
-    public tick(event: GamepadTickEvent): boolean {
-        if (event.hasAnyAxesTicked) {
-            this.tickAxes(event);
-        }
-        return true;
-    }
-
-    private tickAxes(event: GamepadTickEvent) {
-        const axes = this.getAxes(event, this.X_AXES, this.Y_AXES, this._data.userPosition);
-        if (Math.abs(axes.y) + Math.abs(axes.x) > 0.3) {
-            // @ts-ignore
-            const token:Token = (canvas as Canvas).tokens?.objects?.children.find(token => this._data.actorId?.endsWith(token.actor?.id) );
-            if(token){
-                // @ts-ignore
-                token.rotate(this.getDegree(axes),0);
-            }
-        }
-    }
-
-    private getDegree(point: Canvas.Point):number{
-        return (Math.atan2(point.x*-1, point.y) * 180) / Math.PI;
-    }
-
-    private getAxes(event: GamepadTickEvent, xAxis: string, yAxis: string, userPosition: string): Canvas.Point {
-        let x = 0;
-        let y = 0;
-        for (const [i, value] of Object.entries(event.gamepad.axes)) {
-            x = x || this._get(xAxis, i, value);
-            y = y || this._get(yAxis, i, value);
-        }
-        if (userPosition === "top" || userPosition === "right") {
-            x = x * -1;
-            y = y * -1;
-        }
-        if (userPosition === "right" || userPosition === "left") {
-            const y2 = y;
-            y = x;
-            x = y2 * -1;
-        }
-        return {x: x, y: y}
-    }
-
-    private _get(type: string, i: string, value: number) {
-        let result = 0;
-        const {index, reversed} = this._data.config.binding.axes[type];
-        if (i === index.toString()) {
-            if (reversed) {
-                result = value;
-            } else {
-                result = value;
-            }
-        }
-        return result;
-    }
-
-
-    public destroy() {
-
-    }
+  public destroy() {}
 }
 
 type _staticCheck = AssertAssignable<typeof TokenRotation, StaticOf<GamepadModule>>;

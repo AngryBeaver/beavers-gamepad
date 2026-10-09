@@ -1,135 +1,139 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../GamepadSettings.js";
+import { HOOK_GAMEPAD_CONNECTED, gamepadApi } from "../definitions";
 
 /**
  * gamepadmodule manager
  */
 export class GamepadModuleManager implements GamepadModuleManagerI {
+  registeredGamepadModuleInstances: {
+    [gamepadIndex: string]: {
+      [moduleId: string]: GamepadModuleInstance;
+    };
+  } = {};
+  registeredGamepadModules: {
+    [moduleId: string]: GamepadModule;
+  } = {};
+  enabledContextModules: {
+    [gamepadIndex: string]: string;
+  } = {};
+  suspendedGamepads = new Set<string>();
 
-    registeredGamepadModuleInstances: {
-        [gamepadIndex: string]: {
-            [moduleId: string]: GamepadModuleInstance
+  constructor() {
+    Hooks.on(HOOK_GAMEPAD_CONNECTED, () => this.updateGamepadModuleInstance());
+    Hooks.on("updateUser", (user: any) => {
+      if (gamepadApi().Settings.getGamepadIndexForUser(user.id)) {
+        this.updateGamepadModuleInstance();
+      }
+    });
+  }
+
+  /**
+   * this should be called within the gamepadmodule ready hook and can register gamepadModules
+   * @param GamepadModule
+   */
+  registerGamepadModule(GamepadModule: GamepadModule) {
+    const id = GamepadModule.defaultConfig.id;
+    this.registeredGamepadModules[id] = GamepadModule;
+  }
+
+  getGamepadModules() {
+    return { ...this.registeredGamepadModules };
+  }
+
+  enableContextModule(gamepadIndex: string, focusModuleId: string) {
+    this.enabledContextModules[gamepadIndex] = focusModuleId;
+  }
+
+  disableContextModule(gamepadIndex: string) {
+    delete this.enabledContextModules[gamepadIndex];
+  }
+
+  suspend(gamepadIndex: string) {
+    this.suspendedGamepads.add(String(gamepadIndex));
+  }
+
+  resume(gamepadIndex: string) {
+    this.suspendedGamepads.delete(String(gamepadIndex));
+  }
+
+  /**
+   * this injects and updates the module configuration into "the" gamepadmoduleinstance.
+   * if gamepadmodule is non existant on the gamepad it creates an instance.
+   * instances of modules that are no longer configured for the gamepad get destroyed.
+   */
+  updateGamepadModuleInstance() {
+    const gamepadConfigs = gamepadApi().Settings.getGamepadConfigs();
+    for (const [gamepadIndex, gamepadConfig] of Object.entries(gamepadConfigs)) {
+      for (const moduleId of Object.keys(this.registeredGamepadModuleInstances[gamepadIndex] ?? {})) {
+        if (!gamepadConfig.modules[moduleId]) {
+          this.deleteGamepadModuleInstance(gamepadIndex, moduleId);
         }
-    } = {};
-    registeredGamepadModules: {
-        [moduleId: string]: GamepadModule
-    } = {};
-    enabledContextModules: {
-        [gamepadIndex: string]: string
-    } = {}
-
-    constructor() {
-        Hooks.on(HOOK_GAMEPAD_CONNECTED, this.updateGamepadModuleInstance.bind(this));
-        Hooks.on("updateUser", async function(user:User){
-            const gamepadIndex = (game as ExtendedGame)[NAMESPACE].Settings.getGamepadIndexForUser(user.id)
-            if(gamepadIndex){
-                // @ts-ignore
-                this.updateGamepadModuleInstance()
-            }
-
-        }.bind(this));
+      }
+      for (const moduleId of Object.keys(gamepadConfig.modules)) {
+        const gamepadModuleInstance =
+          this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId) ??
+          this._addGamepadModuleInstance(gamepadIndex, moduleId);
+        gamepadModuleInstance?.updateGamepadConfig(gamepadConfig);
+      }
     }
+  }
 
-    /**
-     * this should be called within the gamepadmodule ready hook and can register gamepadModules
-     * @param GamepadModule
-     */
-    registerGamepadModule(GamepadModule: GamepadModule) {
-        const id = GamepadModule.defaultConfig.id;
-        this.registeredGamepadModules[id] = GamepadModule;
+  /**
+   * removes a gamepadmoduleInstance
+   * @param gamepadIndex
+   * @param moduleId
+   */
+  deleteGamepadModuleInstance(gamepadIndex: string, moduleId: string) {
+    const gamepadModule = this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId);
+    if (gamepadModule) {
+      gamepadModule.destroy();
+      delete this.registeredGamepadModuleInstances[gamepadIndex][moduleId];
     }
-
-    getGamepadModules() {
-        return {...this.registeredGamepadModules};
+    if (this.enabledContextModules[gamepadIndex] === moduleId) {
+      this.disableContextModule(gamepadIndex);
     }
+  }
 
-    enableContextModule(gamepadIndex: string, focusModuleId: string) {
-        this.enabledContextModules[gamepadIndex] = focusModuleId;
+  /**
+   * this is executed via BeaversGamepadManager for each gamepad
+   * It passes the tick event down to each registered moduleInstance of that gamepad.
+   * @param gamepadTickEvent
+   */
+  tick(gamepadTickEvent: GamepadTickEvent) {
+    const gamepadIndex = String(gamepadTickEvent.gamepad.index);
+    if (this.suspendedGamepads.has(gamepadIndex)) {
+      return;
     }
-
-    disableContextModule(gamepadIndex: string) {
-        delete this.enabledContextModules[gamepadIndex];
-    }
-
-    /**
-     * this injects and updates the module configuration into "the" gamepadmoduleinstance.
-     * if gamepadmodule is non existant on the gamepad it creates an instance.
-     */
-    updateGamepadModuleInstance() {
-        const gamepadConfigs = (game as ExtendedGame)[NAMESPACE].Settings.getGamepadConfigs();
-        for (const [gamepadIndex, gamepadConfig] of Object.entries(gamepadConfigs)) {
-            for (const [moduleId, moduleConfig] of Object.entries(gamepadConfig.modules)) {
-                let gamepadModuleInstance = this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId);
-                if (!gamepadModuleInstance) {
-                    gamepadModuleInstance = this._addGamepadModuleInstance(gamepadIndex, moduleId);
-                }
-                if (gamepadModuleInstance) {
-                    // @ts-ignore
-                    gamepadModuleInstance.updateGamepadConfig(gamepadConfig);
-                }
-            }
+    const gamepadModules = this.registeredGamepadModuleInstances[gamepadIndex];
+    if (gamepadModules) {
+      if (this.enabledContextModules[gamepadIndex]) {
+        gamepadModules[this.enabledContextModules[gamepadIndex]]?.tick(gamepadTickEvent);
+      } else {
+        for (const gamepadModuleInstance of Object.values(gamepadModules)) {
+          if (!gamepadModuleInstance.getConfig().isContextModule && !gamepadModuleInstance.tick(gamepadTickEvent)) {
+            return;
+          }
         }
+      }
     }
+  }
 
-    /**
-     * removes a gamepadmoduleInstancecs
-     * @param gamepadIndex
-     * @param moduleId
-     */
-    deleteGamepadModuleInstance(gamepadIndex: string, moduleId: string) {
-        let gamepadModule = this._getRegisteredGamepadModuleInstance(gamepadIndex, moduleId);
-        if (gamepadModule) {
-            gamepadModule.destroy();
-            delete this.registeredGamepadModuleInstances[gamepadIndex][moduleId];
-        }
+  private _addGamepadModuleInstance(gamepadIndex: string, moduleId: string): GamepadModuleInstance | undefined {
+    if (!this.registeredGamepadModules[moduleId]) {
+      // the vtt-module that brought this gamepadmodule might be disabled.
+      return undefined;
     }
-
-    /**
-     * this is executed via BeaversGamepadManager for each gamepad
-     * It passes the tick event down to each registered moduleInstance of that gamepad.
-     * @param gamepadTickEvent
-     */
-    tick(gamepadTickEvent: GamepadTickEvent) {
-        const gamepadIndex = gamepadTickEvent.gamepad.index;
-        const gamepadModules = this.registeredGamepadModuleInstances[gamepadIndex];
-        if (gamepadModules) {
-            if (this.enabledContextModules[gamepadIndex]) {
-                for (const [moduleId, gamepadModuleInstance] of Object.entries(gamepadModules)) {
-                    if (this.enabledContextModules[gamepadIndex] === moduleId) {
-                        gamepadModuleInstance.tick(gamepadTickEvent);
-                        return;
-                    }
-                }
-            } else {
-                for (const [moduleId, gamepadModuleInstance] of Object.entries(gamepadModules)) {
-                    // @ts-ignore
-                    if (!gamepadModuleInstance.getConfig().isContextModule && !gamepadModuleInstance.tick(gamepadTickEvent)) {
-                        return
-                    }
-                }
-            }
-        }
+    const gamepadModuleInstance = new this.registeredGamepadModules[moduleId]();
+    if (!this.registeredGamepadModuleInstances[gamepadIndex]) {
+      this.registeredGamepadModuleInstances[gamepadIndex] = {};
     }
+    this.registeredGamepadModuleInstances[gamepadIndex][moduleId] = gamepadModuleInstance;
+    return gamepadModuleInstance;
+  }
 
-    private _addGamepadModuleInstance(gamepadIndex: string, moduleId: string): GamepadModuleInstance {
-        if (!this.registeredGamepadModules[moduleId]) {
-            console.warn("Module " + moduleId + " is not yet registered");
-        }
-        // @ts-ignore
-        const gamepadModuleInstance = new this.registeredGamepadModules[moduleId]();
-        if (!this.registeredGamepadModuleInstances[gamepadIndex]) {
-            this.registeredGamepadModuleInstances[gamepadIndex] = {};
-        }
-        this.registeredGamepadModuleInstances[gamepadIndex][moduleId] = gamepadModuleInstance;
-        return gamepadModuleInstance;
-    }
-
-    private _getRegisteredGamepadModuleInstance(gamepadIndex: string, moduleId: string): GamepadModuleInstance | undefined {
-        if (this.registeredGamepadModuleInstances[gamepadIndex]) {
-            if (this.registeredGamepadModuleInstances[gamepadIndex][moduleId]) {
-                return this.registeredGamepadModuleInstances[gamepadIndex][moduleId]
-            }
-        }
-        return undefined;
-    }
-
+  private _getRegisteredGamepadModuleInstance(
+    gamepadIndex: string,
+    moduleId: string,
+  ): GamepadModuleInstance | undefined {
+    return this.registeredGamepadModuleInstances[gamepadIndex]?.[moduleId];
+  }
 }

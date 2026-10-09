@@ -1,9 +1,8 @@
 {
-  "title": "Beaver's Gamepad",
-  "description": "For controlling actors while playing locally on a central map monitor",
-  "id": "beavers-gamepad",
-  "version": "2.1.2",
-  "socket": true,
+  "title": "{{title}}",
+  "description": "{{description}}",
+  "id": "{{name}}",
+  "version": "{{version}}",
   "authors": [
     {
       "name": "angryBeaver",
@@ -17,47 +16,21 @@
       "path": "lang/en.json"
     }
   ],
-  "esmodules": [
-    "src/main.js"
-  ],
-  "styles": [
-    "css/gamepad.css"
-  ],
-  "packs": [
-  ],
+  "esmodules": "{{sources}}",
+  "styles": "{{css}}",
   "url": "https://github.com/AngryBeaver/beavers-gamepad",
   "manifest": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/module.json",
   "download": "https://github.com/AngryBeaver/beavers-gamepad/releases/latest/download/beavers-gamepad.zip",
   "relationships": {
-    "systems": [
-    ],
-    "requires": [
-      {
-        "id": "beavers-system-interface",
-        "type": "module",
-        "manifest": "https://github.com/AngryBeaver/beavers-system-interface/releases/latest/download/module.json",
-        "compatibility": {
-          "minimum": "2.3.1",
-          "verified": "2.3.1"
-        }
-      },
-      {
-        "id": "socketlib",
-        "type": "module",
-        "compatibility": {
-          "verified": "1.0.13"
-        }
-      }
-    ],
     "recommends": [
       {
-        "id": "monks-common-display"
+        "id": "monks-common-display",
+        "type": "module"
       }
     ]
   },
   "compatibility": {
-    "minimum": "11",
-    "verified": "13",
-    "maximum": "13"
+    "minimum": "13",
+    "verified": "14"
   }
 }
