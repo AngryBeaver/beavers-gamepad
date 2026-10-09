@@ -1,35 +1,219 @@
-body.hide-ui > .beavers-tiny-ui:not(#alot):not(#of):not(#things):not(#to):not(#have):not(#more):not(#specificity):not(#then):not(#monk):not(#logo):not(#interface):not(#board):not(#hud):not(#ui-left):not(#ui-middle):not(#ui-right):not(#confetti-canvas):not(#dice-box-canvas):not(#pause):not(#notifications):not(#narrator):not(#combat-popout):not(.image-popout):not(.journal-sheet):not(.journal-attached):not(#slideshow-display):not(#slideshow-canvas):not(#combat-carousel):not(#levels3d):not(#av-config):not(#camera-views){
+/* monks-common-display hides every direct child of body, the tiny user interfaces have to stay */
+body.hide-ui > .beavers-tiny-ui:not(#alot):not(#of):not(#things):not(#to):not(#have):not(#more):not(#specificity):not(#then):not(#monk):not(#logo):not(#interface):not(#board):not(#hud):not(#ui-left):not(#ui-middle):not(#ui-right):not(#confetti-canvas):not(#dice-box-canvas):not(#pause):not(#notifications):not(#narrator):not(#combat-popout):not(.image-popout):not(.journal-sheet):not(.journal-attached):not(#slideshow-display):not(#slideshow-canvas):not(#combat-carousel):not(#levels3d):not(#av-config):not(#camera-views):not(#combat-dock):not(#conversation-hud-background):not(.story-sheet):not(#boss-bar):not(#epic-roll-5e):not(.bossOverlay):not(#theatre-group){
     display: flex !important
-}
-.beavers-gamepad.tiny-user-interface {
-    position: absolute !important;
-}
-.beavers-gamepad.beavers-settings{
-    background-color:#222;
-}
-.beavers-gamepad.beavers-settings .window-content{
-    overflow: hidden auto !important;
 }
 
 .beavers-tiny-ui{
+    --user-color: #888888;
     position: absolute;
     overflow: hidden;
     padding: 0px;
     height: 50px;
     width: 210px;
-    border: 1px solid var(--color-border-dark);
+    border: 1px solid var(--color-border-dark, #000);
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
     max-height: 100%;
     max-width: 100%;
-    justify-content: flex-start;
-    background: var(--background);
+    color: var(--color-text-primary, #efe6d8);
+    background: var(--background, rgba(11, 10, 19, 0.9));
     box-shadow: 0 0 20px black;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     border-radius: 8px;
-    z-index: var(--z-index-app);
+    z-index: var(--z-index-app, 100);
     transform-origin: top left;
+    pointer-events: all;
+}
+.beavers-tiny-ui.glow{
+    box-shadow: 0 0 30px 5px var(--user-color);
+}
+.beavers-tiny-ui .tiny-ui-content{
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+.beavers-tiny-ui .drag-me{
+    flex: 0 0 12px;
+    border-right: 1px solid black;
+    cursor: move;
+    background-color: var(--user-color);
+}
+.beavers-tiny-ui img{
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 2px;
+    object-fit: cover;
+}
+.beavers-tiny-ui span{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* nothing to choose: who sits here and which character is played */
+.beavers-tiny-ui .tiny-ui-idle{
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 6px;
+}
+.beavers-tiny-ui .tiny-ui-row{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+.beavers-tiny-ui .user-row{
+    font-size: 11px;
+    line-height: 14px;
+    opacity: 0.65;
+}
+.beavers-tiny-ui .user-row img{
+    width: 14px;
+    height: 14px;
+}
+.beavers-tiny-ui .character-row{
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: bold;
+    min-height: 22px;
+}
+.beavers-tiny-ui .character-row img{
+    width: 22px;
+    height: 22px;
+}
+
+/* the wheel: three rows of 16px, the current choice in the middle, its neighbours faded out */
+.beavers-tiny-ui .selection{
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 48px;
+    overflow: hidden;
+}
+.beavers-tiny-ui .selection::before{
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 3px;
+    right: 0;
+    height: 16px;
+    border-radius: 3px;
+    border-left: 3px solid var(--user-color);
+    background: color-mix(in srgb, var(--user-color) 30%, transparent);
+}
+.beavers-tiny-ui .wheel{
+    position: relative;
+    transition: transform 0.15s ease-out;
+}
+.beavers-tiny-ui .select{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 16px;
+    line-height: 16px;
+    padding: 0 6px 0 12px;
+    font-size: 11px;
+    opacity: 0.4;
+    cursor: pointer;
+    transition: opacity 0.15s, font-size 0.15s;
+}
+.beavers-tiny-ui .select.current{
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 1;
+}
+.beavers-tiny-ui .select img{
+    width: 14px;
+    height: 14px;
+    background-color: #555;
+}
+.beavers-tiny-ui .arrows{
+    flex: 0 0 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 0;
+    font-size: 11px;
+    line-height: 12px;
+}
+.beavers-tiny-ui .arrows .count{
+    font-size: 9px;
+    opacity: 0.65;
+    font-variant-numeric: tabular-nums;
+}
+.beavers-tiny-ui .arrows a.disabled{
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.beavers-gamepad .gamepad-config-body{
+    flex: 1;
+    overflow: hidden auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 0.5rem;
+}
+.beavers-gamepad .gamepad-notice{
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-fieldset-border, #888);
+    border-radius: 5px;
+}
+.beavers-gamepad .gamepad-notice.warning{
+    border-color: var(--color-level-warning, #ee9b3a);
+}
+.beavers-gamepad fieldset.gamepad,
+.beavers-gamepad fieldset.gamepad-module{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.beavers-gamepad fieldset legend a{
+    margin-left: 0.5rem;
+}
+/* a button of this gamepad is held down right now, tells you which of the listed gamepads is in your hands */
+.beavers-gamepad fieldset.gamepad.pressed > legend{
+    color: var(--color-level-success, #18520b);
+    text-shadow: 0 0 6px var(--color-level-success, #18520b);
+}
+.beavers-gamepad .binding .binding-index{
+    flex: 0 0 4rem;
+    text-align: center;
+}
+.beavers-gamepad .binding label.checkbox{
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+.beavers-gamepad .binding button.detect{
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+/* the bound button or stick is in use right now */
+.beavers-gamepad .binding.active .binding-index{
+    outline: 2px solid var(--color-level-success, #18520b);
+    box-shadow: 0 0 8px var(--color-level-success, #18520b);
+}
+/* waiting for the player to press the button that should be bound */
+.beavers-gamepad .binding.listening{
+    border-radius: 5px;
+    outline: 2px dashed var(--color-level-warning, #ee9b3a);
+    outline-offset: 3px;
+}
+.beavers-gamepad .binding .capture-prompt{
+    color: var(--color-level-warning, #ee9b3a);
+    font-weight: bold;
+}
+.beavers-gamepad .gamepad-raw{
+    margin: 0;
+    font-variant-numeric: tabular-nums;
 }

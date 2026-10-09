@@ -1,60 +1,60 @@
-import {NAMESPACE} from "../definitions.js";
-import {TinyUserInterfaceGamepadModule} from "./TinyUserInterfaceGamepadModule";
+import { gamepadApi } from "../definitions";
+import { withStoredBinding } from "../core/config";
 
 export class TinyUserInterfaceGamepadModuleActivate {
-
-    public static defaultConfig: GamepadModuleConfig={
-        binding: {
-            axes: {
-            },
-            buttons:{
-                "activate":{
-                    index: "0",
-                    label: "activate :"
-                },
-            }
+  public static defaultConfig: GamepadModuleConfig = {
+    binding: {
+      axes: {},
+      buttons: {
+        activate: {
+          index: "0",
+          label: "activate :",
         },
-        name: "Tiny-User-Interface Activation",
-        id:"beavers-tinyUI-activate",
-        desc: "beaversGamepad.TUIGamepadModule.desc2"
-    }
+      },
+    },
+    name: "Tiny-User-Interface Activation",
+    id: "beavers-tinyUI-activate",
+    desc: "beaversGamepad.TUIGamepadModule.desc2",
+  };
 
-    private _data:{
-        config:  GamepadModuleConfig,
-        userId: string,
-    }={
-        config: TinyUserInterfaceGamepadModuleActivate.defaultConfig,
-        userId: "",
-    }
-    public updateGamepadConfig(gamepadConfig: GamepadConfig){
-        this._data.config = TinyUserInterfaceGamepadModuleActivate.defaultConfig;
-        this._data.config.binding = gamepadConfig.modules[this._data.config.id].binding;
-        this._data.userId = gamepadConfig.userId;
-    }
-    public getConfig():GamepadModuleConfig{
-        return this._data.config;
-    }
+  private _data: {
+    config: GamepadModuleConfig;
+    userId: string;
+  } = {
+    config: TinyUserInterfaceGamepadModuleActivate.defaultConfig,
+    userId: "",
+  };
 
-    public tick(event: GamepadTickEvent):boolean{
-        if(!event.hasAnyButtonTicked){
-            return true;
-        }
-        const index = this._data.config.binding.buttons["activate"].index;
-        if(event.buttons[index]){
-            const choices = (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getUiModuleChoices();
-            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.getInstance(this._data.userId).select({choices:choices})
-                .then(moduleId=>{
-                    if(moduleId !== null && moduleId !== "") {
-                        (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.processUI(this._data.userId, moduleId)
-                    }
-                })
-        }
-        return true;
-    }
+  public updateGamepadConfig(gamepadConfig: GamepadConfig) {
+    this._data.config = withStoredBinding(TinyUserInterfaceGamepadModuleActivate.defaultConfig, gamepadConfig);
+    this._data.userId = gamepadConfig.userId;
+  }
 
-    public destroy(){
+  public getConfig(): GamepadModuleConfig {
+    return this._data.config;
+  }
 
+  public tick(event: GamepadTickEvent): boolean {
+    if (!event.hasAnyButtonTicked) {
+      return true;
     }
+    const index = this._data.config.binding.buttons["activate"].index;
+    if (event.buttons[index]) {
+      const manager = gamepadApi().TinyUIModuleManager;
+      manager
+        .getInstance(this._data.userId)
+        ?.select({ choices: manager.getUiModuleChoices() })
+        .then((moduleId) => {
+          if (moduleId) {
+            return manager.processUI(this._data.userId, moduleId);
+          }
+        })
+        .catch(console.error);
+    }
+    return true;
+  }
+
+  public destroy() {}
 }
 
 type _staticCheck = AssertAssignable<typeof TinyUserInterfaceGamepadModuleActivate, StaticOf<GamepadModule>>;

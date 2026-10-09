@@ -1,186 +1,125 @@
-import {HOOK_GAMEPAD_CONNECTED, NAMESPACE} from "../definitions.js";
+import { NAMESPACE, gamepadApi } from "../definitions";
+
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+// Tiny UI dimensions, have to match gamepad.css
+const UI_WIDTH = 210;
+const UI_HEIGHT = 50;
+const MARGIN = 50;
+
 /**
- * this is the configuration module that allows to add and delete and configure gamepadmodules
+ * this is the configuration app for the users that sit around this client: where they sit and where their
+ * TinyUserInterface is displayed.
  */
-const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
-
-function parseNamePrefixAndValue(
-    e: JQuery.TriggeredEvent,
-    suffix: string
-): { id: string; value: string } | null {
-    const $el = $(e.currentTarget as HTMLElement);
-    const name = $el.attr('name') || '';
-    const re = new RegExp(`^([^.]*)\\.${suffix.replace('.', '\\.')}$`);
-    const m = name.match(re);
-    if (!m) return null;
-
-    return {
-        id: m[1],
-        value: String($el.val() ?? '')
-    };
-}
-
-
 export class UIConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: NAMESPACE + "-ui-config",
+    classes: [NAMESPACE, "ui-config", "standard-form"],
+    tag: "form",
+    position: {
+      width: 600,
+      height: 600,
+    },
+    window: {
+      title: "beaversGamepad.uiConfigApp.title",
+      icon: "fa-solid fa-users",
+      resizable: true,
+    },
+    form: {
+      handler: UIConfigApp.onSubmit,
+      submitOnChange: true,
+      closeOnSubmit: false,
+    },
+    actions: {
+      removeUser: UIConfigApp.onRemoveUser,
+      centerUser: UIConfigApp.onCenterUser,
+    },
+  };
 
-    gamepadModules: {
-        [key:string]:GamepadModule
-    } = {};
-    gamepadConfigs: GamepadConfigs = {}
-    hook:number;
+  static PARTS = {
+    form: {
+      template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
+      scrollable: [""],
+    },
+  };
 
-    constructor(){
-        super();
-        this.hook = Hooks.on(HOOK_GAMEPAD_CONNECTED, this.render.bind(this));
+  async _prepareContext(options: any): Promise<any> {
+    const uiData = gamepadApi().Settings.getUIData();
+    const users: any[] = game.users.contents;
+    return {
+      users: users
+        .filter((user) => uiData[user.id])
+        .map((user) => ({ id: user.id, name: user.name, ...uiData[user.id] })),
+      addable: users.filter((user) => !uiData[user.id]).map((user) => ({ id: user.id, name: user.name })),
+      positionChoices: {
+        bottom: "beaversGamepad.position.bottom",
+        left: "beaversGamepad.position.left",
+        right: "beaversGamepad.position.right",
+        top: "beaversGamepad.position.top",
+      },
+    };
+  }
+
+  /**
+   * stores the field that got changed. Not the whole form: a TinyUserInterface might have been dragged to another
+   * place since the form got rendered.
+   */
+  static async onSubmit(this: UIConfigApp, event: Event, form: HTMLFormElement, formData: any) {
+    const settings = gamepadApi().Settings;
+    const data: { [path: string]: any } = formData.object;
+    const changed = (event.target as HTMLInputElement | null)?.name ?? "";
+    const uiData: { [userId: string]: any } = {};
+    for (const path of changed in data ? [changed] : Object.keys(data)) {
+      if (path === "addUser") {
+        if (data.addUser) uiData[data.addUser] = settings.getUserData(data.addUser);
+        continue;
+      }
+      const [userId, attribute] = path.split(".");
+      const value = attribute === "userPosition" ? data[path] : Number(data[path]) || 0;
+      uiData[userId] = { ...uiData[userId], [attribute]: value };
     }
-
-    static DEFAULT_OPTIONS = {
-        id: NAMESPACE+"ui-config",
-        classes: [NAMESPACE,"ui-config","standard-form","beavers-settings"],
-        tag: "div",
-        position: {
-            width: 600
-        },
-        window: {
-            resizable:true,
-        }
+    await settings.setUIData(uiData, { updateUI: true });
+    // the modules read the position of the user
+    gamepadApi().GamepadModuleManager.updateGamepadModuleInstance();
+    if (data.addUser && (changed === "addUser" || !(changed in data))) {
+      await this.render();
     }
-    static PARTS = {
-        content: {
-            template: `modules/${NAMESPACE}/templates/ui-config.hbs`,
-        }
+  }
+
+  static async onRemoveUser(this: UIConfigApp, event: Event, target: HTMLElement) {
+    await gamepadApi().Settings.removeUserData(target.dataset.id as string);
+    await this.render();
+  }
+
+  /**
+   * places the TinyUserInterface in the middle of the edge the user sits at.
+   */
+  static async onCenterUser(this: UIConfigApp, event: Event, target: HTMLElement) {
+    const userId = target.dataset.id as string;
+    const settings = gamepadApi().Settings;
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    let top: number;
+    let left: number;
+    switch (settings.getUserData(userId).userPosition) {
+      case "top":
+        top = UI_HEIGHT;
+        left = Math.max(MARGIN, Math.round((viewportW - UI_WIDTH / 2) / 2));
+        break;
+      case "left":
+        top = Math.max(MARGIN, Math.round((viewportH - UI_WIDTH / 2) / 2));
+        left = MARGIN;
+        break;
+      case "right":
+        top = Math.max(MARGIN, Math.round((viewportH - UI_WIDTH / 2) / 2));
+        left = Math.max(MARGIN, viewportW - UI_HEIGHT);
+        break;
+      default:
+        top = Math.max(MARGIN, viewportH - UI_HEIGHT - MARGIN);
+        left = Math.max(MARGIN, Math.round((viewportW - UI_WIDTH / 2) / 2));
+        break;
     }
-    get title(){
-        return (game as foundry.Game).i18n?.localize("beaversGamepad.uiConfigApp.title");
-    }
-
-
-    async _prepareContext(options:any): Promise<any> {
-        return {
-            users: (game as ExtendedGame).users?.contents.reduce((a: any, v: { id: any; }) => ({ ...a, [v.id]: v}), {}) || {},
-            uiData: (game as ExtendedGame)[NAMESPACE].Settings.getUIData(),
-            positionChoices: {"bottom":"bottom", "left":"left", "right":"right", "top":"top"}
-        }
-    }
-
-    _onRender(context: any, options:any){
-        const html = $(this.element);
-        this.activateListeners(html);
-    }
-    activateListeners(html:any) {
-        html.find('button.save').on("click",(e:any)=>{
-            this.close();
-        });
-        html.find('.addUser').on("click",(e:any)=>{
-            const formData = new FormData($(e.currentTarget).parents("form")[0]);
-            const userId = formData.get("addUser") as string;
-            if(userId) {
-                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(userId, {}).then(
-                    ()=>{
-                        this.render()
-                    });
-            }
-        });
-        html.find('.removeUser').on("click",(e:any)=>{
-            const id = $(e.currentTarget).data("id");
-            (game as ExtendedGame)[NAMESPACE].Settings.removeUserData(id).then(
-                ()=>{
-                    (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.removeInstance(id);
-                    this.render()
-                }
-            );
-        });
-        html.find('input[name$=".userPosition"]').on("change",(e:any)=>{
-            const parsed = parseNamePrefixAndValue(e, 'userPosition');
-            if(parsed) {
-                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {userPosition: parsed.value})
-                    .catch(console.error);
-                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
-            }
-        });
-        html.find('input[name$=".top"]').on("change",(e:any)=>{
-            const parsed = parseNamePrefixAndValue(e, 'top');
-            if(parsed) {
-                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {top: parsed.value})
-                    .catch(console.error);
-                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
-            }
-        });
-        html.find('input[name$=".left"]').on("change",(e:any)=>{
-            const parsed = parseNamePrefixAndValue(e, 'left');
-            if(parsed) {
-                (game as ExtendedGame)[NAMESPACE].Settings.setUserData(parsed.id, {left: parsed.value})
-                    .catch(console.error);
-                (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
-            }
-        });
-
-        // Center button handler
-        html.find('.center-user-pos').on("click", async (e:any) => {
-            const userId: string = $(e.currentTarget).data("id");
-            if (!userId) return;
-
-            const userData = (game as ExtendedGame)[NAMESPACE].Settings.getUserData(userId) || {};
-            const pos = (userData.userPosition || "bottom") as "top" | "bottom" | "left" | "right";
-
-            const viewportW = window.innerWidth || document.documentElement.clientWidth;
-            const viewportH = window.innerHeight || document.documentElement.clientHeight;
-
-            // Tiny UI dimensions (match tiny-ui.hbs inline styles)
-            const UI_WIDTH = 210;
-            const UI_HEIGHT = 50;
-            const MARGIN = 50;
-
-            let top = 0;
-            let left = 0;
-
-            switch (pos) {
-                case "top":
-                    top = UI_HEIGHT;
-                    left = Math.max(MARGIN, Math.round((viewportW - UI_WIDTH/2) / 2));
-                    break;
-                case "bottom":
-                    top = Math.max(MARGIN, viewportH-UI_HEIGHT-MARGIN);
-                    left = Math.max(MARGIN, Math.round((viewportW - UI_WIDTH/2) / 2));
-                    break;
-                case "left":
-                    top = Math.max(MARGIN, Math.round((viewportH - UI_WIDTH/2) / 2));
-                    left = MARGIN;
-                    break;
-                case "right":
-                    top = Math.max(MARGIN, Math.round((viewportH - UI_WIDTH/2) / 2));
-                    left = Math.max(MARGIN, viewportW - UI_HEIGHT);
-                    break;
-                default:
-                    top = Math.max(MARGIN, viewportH - UI_HEIGHT - MARGIN);
-                    left = Math.max(MARGIN, Math.round((viewportW - UI_WIDTH/2) / 2));
-                    break;
-            }
-
-            await (game as ExtendedGame)[NAMESPACE].Settings.setUserData(userId, { top, left });
-            (game as ExtendedGame)[NAMESPACE].TinyUIModuleManager.updateUIModules()
-            this.render();
-        });
-    }
-
-    async _updateObject(event: Event, formData: any | undefined) {
-        if(formData != undefined) {
-            delete formData["addUser"];
-            const uiData = {};
-            for (const [attribute, value] of Object.entries(formData)) {
-                setProperty(uiData, attribute, value);
-            }
-            (game as ExtendedGame)[NAMESPACE].Settings.setUIData(uiData as UIData,{updateUI:true})
-        }
-    }
-
-
-
-    async close(options?: FormApplication.CloseOptions): Promise<void>{
-        super.close(options);
-        const result = super.close(options);
-        Hooks.off(HOOK_GAMEPAD_CONNECTED,this.hook);
-        return result
-    }
-
+    await settings.setUIData({ [userId]: { ...settings.getUserData(userId), top, left } }, { updateUI: true });
+    await this.render();
+  }
 }

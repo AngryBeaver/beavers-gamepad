@@ -4,6 +4,9 @@
 ![Download Count](https://img.shields.io/github/downloads/AngryBeaver/beavers-gamepad/total?color=bright-green)
 [![npm version](https://badge.fury.io/js/beavers-gamepad.svg)](https://badge.fury.io/js/beavers-gamepad?color=blue)
 
+## Requirements
+Foundry VTT 13 or 14. No other modules are required.
+
 ## Description
 This module is intended to be used in local sessions with one Map Monitor and multiple connected gamepads.
 Initially this module comes with a collection of submodules that let you choose an actor and gives you control over that token move and rotation.
@@ -40,61 +43,57 @@ _If you assign multiple actors to a user the user can later decide whom to play.
 
 Go to your common display and login as map user.
 ### Gamepad Settings
-Connect your gamepads to the client that shows the common display. 
+Connect your gamepads to the client that shows the common display.
 
 _You need to go to the module Settings "Beaver's Gamepad" underneath "Configure Settings" you won't find it in the "Configure Controls" of foundry as it is not only a key binding._
 
 ![img.png](pictures/gamepadConfig2.png)
 
-Here you can press the 🎮configure button:
+Here you can press the "Configure gamepads" button.
 
-![](pictures/empty.png)
+_If no gamepads are detected you need to connect your gamepad to your device and then press any button on it._
 
-_If no gamepads are detected you need to connect you gamepad to your device and then press any Key on your gamepads._
+All connected gamepads are listed with their internal identification.
+_The name of a gamepad lights up while one of its buttons is held down, so you can tell which entry belongs to the gamepad in your hands. Gamepads that support it also rumble when you click the icon next to the name._
 
-![img.png](pictures/detectedGamepads2.png)
+Now assign each gamepad to a different user e.g. (player 1-n) and choose where that player sits. That is all that is needed:
 
-_All connected Gamepads will be listed with its internal identification._
-
-Now you should assign each gamepad to a different user e.g. (player 1-n)
-
-Then you can add gamepadModules to this controller
+- _A gamepad that is seen for the first time already comes with the five gamepad modules of this module:_
+  - _Beavers-Token-Movement (moves a token around)_
+  - _Beavers-Token-Rotation (rotates a token)_
+  - _Tiny-User-Interface Activation (activates the tiny user interface)_
+  - _Tiny-User-Interface Control (controls a user defined context)_
+  - _Beavers-Open-Doors (opens nearest door in close range)_
+- _The user of a gamepad gets a Tiny-User-Interface on this screen._
 
 _The amount of GamepadModules can vary depending on vtt-modules installed.
-Other VTT-modules can add own gamepad-modules here if they implement the interface and register that gamepadmodule._
+Other VTT-modules can add own gamepad-modules here if they implement the interface and register that gamepadmodule. You can remove modules from a gamepad and add them again._
 
-_This Module includes five Gamepad Submodules you could add:_
-- _Beavers-Token-Movement (moves a token around)_
-- _Beavers-Token-Rotation (rotates a token)_
-- _Tiny-User-Interface Control (controls a user defined context)_
-- _Tiny-User-Interface Activation (activates the tiny user interface)_
-- _Beavers-Open-Doors (opens nearest door in close range)_
+#### Sticks and buttons
+Each gamepad module lists the sticks and buttons it uses. Most of the time the default config matches a standard gamepad and you need no further configuration,
+_e.g. Beavers Token Movement uses the left stick of your controller._
 
-You could add all 5 Modules Each module comes with its own configuration
+If it does not match you do not need to know how your gamepad numbers its sticks and buttons:
+- click **detect** next to a stick or button and then press that button, or push that stick, on the gamepad. For sticks the direction you are asked to push to also sets "reversed".
+- the wand icon in the title of a gamepad module walks through all sticks and buttons of that module one after the other.
+- a row lights up while its button or stick is in use, so you can check the result right away.
 
-![img.png](pictures/basisModules.png)
+_While a detection is running the gamepad does not control anything in the game._
 
-_In each configuration Section you can configure which axis and what buttons to use._
-_The current version of beavers-gamepad has only a very primitive settings ! you need to figure out your gamepads internal axis and button numeration._
-
-Luckily most of the time the default config should match and you need no further configuration.
-_e.g. Beavers Token Movement should use your lefthand stick of your controller
-
-![](pictures/beavers-token-movement.png)
+_A second gamepad of a model you already configured starts with the same sticks and buttons._
 
 ### User Context
-In the gamepad Settings you can click the UserConfiguration button
-Then add a user configuration for each player.
+In the module Settings you can click the "Configure users" button.
+Users that got a gamepad assigned are listed here already, you can add further users.
 
-![img.png](pictures/userConfiguration.png)
-#### User Position:
-You can define the user position relative to your common display. 
+#### Seat:
+You can define the user position relative to your common display. This is the same setting as the seat in the gamepad configuration.
 
-_If your display lays flat on the table a user may sit top meaning he would look from upside down on the screen. Some modules may consider this to invert axis on your gamepade accordingly e.g. Token Movement._
+_If your display lays flat on the table a user may sit top meaning he would look from upside down on the screen. Sticks and the Tiny-User-Interface are turned accordingly._
 
 #### TinyUserInterface:
-You should enable the TinyUserInterface for each player.
-_This will show a tiny ui that points into the direction the player is sitting. Foundry assigns each user a color the tiny uis have a border in that color. You can drag and drop the ui by this border._
+Every user listed here has a TinyUserInterface on this screen.
+_This is a tiny ui that points into the direction the player is sitting. Foundry assigns each user a color the tiny uis have an edge in that color. You can drag and drop the ui by this edge, or type in its position, or center it at the seat of the user._
 
 ![img.png](pictures/tinyUI.png)
 
@@ -107,13 +106,14 @@ You can then select a TinyUIModule.
 _The amount of TinyUIModules can vary depending on vtt-modules installed.
 Other VTT-modules can add own gamepad-ui-modules here if they implement the interface and register that ui-module._
 
-_Initially there is at least one module available:_
+_Initially there are two modules available:_
 - _Beavers-Character-Selection (you can select another actor for your user that you then control)_
+- _Beavers-Open-Door (opens or closes the nearest door in front of your token)_
 
 ![img_1.png](pictures/bcs.png)
 
 #### Beavers-Character-Selection
-Lets you select and choose a new actor for your user. For this to work a gm needs to be connected to the game.
+Lets you select and choose a new actor for your user. For this to work a gm needs to be connected to the game, unless the client itself is logged in as that user or as gm.
 
 ![img.png](pictures/chooseAnActor.png)
 
@@ -137,12 +137,10 @@ This module depends on the browsers ability to detect gamepads, i can not do muc
   - There are some thirdparty tools that can change how a gamepad registers to windows. (not part of this documentation)
 - I have observed that some gamepads are missing if they are already bound in another app e.g. game.
   - turn of other apps that uses gamepads and refresh the browser.
-### Linking phyisical Gamepad to Configuration
-- I have observed that it is currently hard to know which axes number correlates to what on your gamepad.
-  - I hope that i can find the time to implement some sort of "detect axes" by using the physicall gamepad.
-  - You can use https://3960.org/sandbox/gamepad-test.html to find the appropriate numeration.
-- I have observed that it is hard to map a gamepad identification name to the real gamepad especially if you have multiple same gamepads.
-  - I hope that I can find the time to fix that somehow. 
+### Linking physical Gamepad to Configuration
+- Gamepads of the same model report the same identification, so the list can not tell them apart by name.
+  - The name of a gamepad lights up in the gamepad configuration while one of its buttons is held down, and gamepads that support it can be made to rumble with the icon next to their name.
+- The browser numbers the gamepads in the order they wake up. A gamepad that shows up under another number takes its configuration with it, two gamepads of the same model may swap their users though.
 
 ## Extensions
 You can write own GamepadModules or TinyUiModules. There will be a section on how to do this as soon as the interfaces are more established. Currently everything might still be in the flow.

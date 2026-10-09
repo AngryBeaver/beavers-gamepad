@@ -1,78 +1,50 @@
-<form class="main" autocomplete="off">
-    <div class="flexcol" style="margin-bottom:5px;">
-        <div style="box-shadow:0 0 0 1px #a9d5de inset, 0 0 0 0 transparent;    background-color: #f8ffff;
-    color: #276f86;padding:10px;border-radius:5px;margin:2px;">
-            {{localize "beaversGamepad.uiConfigApp.info"}}
-        </div>
-    </div>
-    {{#each uiData}}
-        <fieldset style="margin:5px 0px;">
+<div class="gamepad-config-body">
+    <p class="gamepad-notice">
+        {{localize "beaversGamepad.uiConfigApp.info"}}
+    </p>
+    {{#each users as |user|}}
+        <fieldset>
             <legend>
-                {{lookup (lookup ../users @key) "name"}}
-                <a class="removeUser" style="flex:0" data-id="{{@key}}">
-                <i class="fas fa-trash"></i>
+                {{user.name}}
+                <a data-action="removeUser" data-id="{{user.id}}" data-tooltip="beaversGamepad.uiConfigApp.removeUser">
+                    <i class="fa-solid fa-trash"></i>
                 </a>
             </legend>
             <div class="form-group">
                 <label>{{localize "beaversGamepad.uiConfigApp.userPosition"}}</label>
                 <div class="form-fields">
-                    <beavers-selection>
-                        <select name="{{@key}}.userPosition">
-                            {{selectOptions @root.positionChoices selected=this.userPosition}}
-                        </select>
-                    </beavers-selection>
+                    <select name="{{user.id}}.userPosition">
+                        {{selectOptions @root.positionChoices selected=user.userPosition localize=true}}
+                    </select>
                 </div>
-                <p class="notes hint">
-                    {{localize "beaversGamepad.uiConfigApp.userPositionHint"}}
-                </p>
+                <p class="hint">{{localize "beaversGamepad.uiConfigApp.userPositionHint"}}</p>
             </div>
             <div class="form-group">
                 <label>{{localize "beaversGamepad.uiConfigApp.userPositionPx"}}</label>
                 <div class="form-fields">
-                    <input type="number"
-                           name="{{@key}}.top"
-                           value="{{this.top}}"
-                           placeholder="Top"
-                           data-dtype="Number"
-                           step="1" />
-                    <input type="number"
-                           name="{{@key}}.left"
-                           value="{{this.left}}"
-                           placeholder="Left"
-                           data-dtype="Number"
-                           step="1" />
+                    <input type="number" name="{{user.id}}.top" value="{{user.top}}" placeholder="Top" step="1"/>
+                    <input type="number" name="{{user.id}}.left" value="{{user.left}}" placeholder="Left" step="1"/>
+                    <button type="button" data-action="centerUser" data-id="{{user.id}}"
+                            data-tooltip="beaversGamepad.uiConfigApp.userPositionPxCenter">
+                        <i class="fa-solid fa-crosshairs"></i>
+                    </button>
                 </div>
-                <button type="button"
-                        class="center-user-pos"
-                        data-id="{{@key}}"
-                        style="flex:0;line-height:20px;"
-                        title="{{localize "beaversGamepad.uiConfigApp.userPositionPxCenter"}}">
-                    <i class="fas fa-crosshairs"></i>
-                </button>
-
-                <p class="notes hint">
-                    {{localize "beaversGamepad.uiConfigApp.userPositionPxHint"}}
-                </p>
+                <p class="hint">{{localize "beaversGamepad.uiConfigApp.userPositionPxHint"}}</p>
             </div>
         </fieldset>
     {{/each}}
-    <h2></h2>
-    <div class="form-group">
-        <label>{{localize "beaversGamepad.uiConfigApp.addUser"}}</label>
-        <div class="form-fields">
-            <beavers-selection>
+    {{#if addable.length}}
+        <div class="form-group">
+            <label>{{localize "beaversGamepad.uiConfigApp.addUser"}}</label>
+            <div class="form-fields">
                 <select name="addUser">
-                    {{#each @root.users}}
-                        {{#unless (lookup ../uiData @key)}}
-                            <option value="{{@key}}">{{this.name}}</option>
-                        {{/unless}}
+                    <option value=""></option>
+                    {{#each addable as |user|}}
+                        <option value="{{user.id}}">{{user.name}}</option>
                     {{/each}}
                 </select>
-            </beavers-selection>
-            <button type="button" class="addUser"><i class="fas fa-plus"></i></button>
+            </div>
+            <p class="hint">{{localize "beaversGamepad.uiConfigApp.addUserHint"}}</p>
         </div>
-        <p class="notes hint">
-            {{localize "beaversGamepad.uiConfigApp.addUserHint"}}
-        </p>
-    </div>
-</form>
+    {{/if}}
+</div>

@@ -5,265 +5,246 @@
  * each user instance can be dragged and rotated to position it.
  * the app needs to be very small. in place dropdown ?
  * */
-import {NAMESPACE} from "../definitions.js";
-import {GamepadSettings} from "../GamepadSettings.js";
-import {TinyUserInterfaceGamepadModule} from "../modules/TinyUserInterfaceGamepadModule.js";
-const { ApplicationV2, HandlebarsApplicationMixin } = (foundry as any).applications.api;
+import { NAMESPACE, gamepadApi } from "../definitions";
+import { TinyUserInterfaceGamepadModule } from "../modules/TinyUserInterfaceGamepadModule";
+
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+const ROTATION: { [userPosition: string]: string } = { left: "90deg", top: "180deg", right: "270deg" };
+// height of one choice in the wheel, has to match tiny-ui.hbs
+const WHEEL_STEP = 16;
 
 export class TinyUserInterface extends HandlebarsApplicationMixin(ApplicationV2) implements TinyUserInterfaceI {
+  _data: {
+    userId: string;
+    wheel: number;
+    selectData: TinyUISelectData;
+    resolve?: (id: string | null) => void;
+    glow: boolean;
+    closed: boolean;
+  };
+  hook: number;
 
-    _data: {
-        userId: string,
-        wheel: number,
-        selectData: SelectData,
-        resolve?:(arg0:any)=>void,
-        html: any,
-        glow:boolean,
-    }
-    _settings: GamepadSettings;
-    hook:number
+  constructor(userId: string) {
+    super({ id: `${NAMESPACE}-tiny-ui-${userId}` });
+    this._data = {
+      userId: userId,
+      wheel: 0,
+      selectData: { choices: {} },
+      glow: false,
+      closed: false,
+    };
+    this.hook = Hooks.on("updateUser", (user: any) => {
+      if (user.id === userId) {
+        this.render();
+      }
+    });
+  }
 
+  // The root element has to be a direct child of body with the class beavers-tiny-ui: that is what gamepad.css
+  // keeps visible when monks-common-display hides the rest of the ui.
+  static DEFAULT_OPTIONS = {
+    classes: [NAMESPACE, "beavers-tiny-ui"],
+    tag: "div",
+    window: {
+      frame: false,
+      positioned: false,
+    },
+  };
 
-    constructor(userId: string) {
-        super({id:`${NAMESPACE}-tiny-ui-${userId}`});
-        this._settings = (game as ExtendedGame)[NAMESPACE].Settings as GamepadSettings
-        this._data = {
-            userId: userId,
-            wheel: 0,
-            selectData: {choices:{}},
-            html: null,
-            glow:false,
-        };
-        if ((this as any).rendered) {
-            (this as any).bringToTop?.();
+  static PARTS = {
+    content: {
+      template: `modules/${NAMESPACE}/templates/tiny-ui.hbs`,
+    },
+  };
+
+  get userId() {
+    return this._data.userId;
+  }
+
+  async close(options?: any): Promise<any> {
+    Hooks.off("updateUser", this.hook);
+    this._data.closed = true;
+    const resolve = this._data.resolve;
+    this._data.resolve = undefined;
+    resolve?.(null);
+    return super.close(options);
+  }
+
+  async _prepareContext(options: any): Promise<any> {
+    const choices = Object.entries(this._data.selectData.choices).map(([key, value]) => ({ key, ...value }));
+    return {
+      user: game.users.get(this._data.userId),
+      choices: choices,
+      isIdle: choices.length === 0,
+    };
+  }
+
+  /**
+   * the tiny ui is placed by the stored userdata and not by the window management of foundry
+   */
+  setPosition(position?: any): any {
+    this._place();
+    return position;
+  }
+
+  private _place() {
+    const element: HTMLElement | undefined = this.element;
+    if (!element) return;
+    const userData = gamepadApi().Settings.getUserData(this._data.userId);
+    const user = game.users.get(this._data.userId);
+    const top = Math.min(Math.max(Number(userData.top) || 0, 0), Math.max(window.innerHeight - 40, 0));
+    const left = Math.min(Math.max(Number(userData.left) || 0, 0), Math.max(window.innerWidth - 40, 0));
+    element.style.top = `${top}px`;
+    element.style.left = `${left}px`;
+    element.style.transform = `rotate(${ROTATION[userData.userPosition] ?? "0deg"})`;
+    element.style.setProperty("--user-color", String(user?.color ?? "#888888"));
+    element.classList.toggle("glow", this._data.glow);
+  }
+
+  async _onRender(context: any, options: any) {
+    await super._onRender(context, options);
+    this._place();
+    const html: HTMLElement = this.element;
+    html.querySelector(".selection")?.addEventListener(
+      "wheel",
+      (e) => {
+        const deltaY = (e as WheelEvent).deltaY;
+        if (deltaY !== 0) this.rotateWheel(deltaY > 0 ? 1 : -1);
+      },
+      { passive: true },
+    );
+    html.querySelector("a.up")?.addEventListener("click", () => this.rotateWheel(-1));
+    html.querySelector("a.down")?.addEventListener("click", () => this.rotateWheel(1));
+    html.querySelectorAll<HTMLElement>(".select").forEach((el) =>
+      el.addEventListener("click", () => {
+        this._choose(el.dataset.key ?? null);
+      }),
+    );
+    html.querySelector(".drag-me")?.addEventListener("mousedown", (e) => {
+      dragElement(e as MouseEvent, html).then((position) => {
+        gamepadApi().Settings.setUserData(this._data.userId, position);
+      });
+    });
+    this.rotateWheel(0);
+  }
+
+  public async select(selectData: TinyUISelectData): Promise<string | null> {
+    // a selection that is still open is aborted.
+    this._data.resolve?.(null);
+    const gamepadIndex = gamepadApi().Settings.getGamepadIndexForUser(this.userId);
+    const dfd = new Deferred<string | null>();
+    let promise = dfd.promise;
+    if (gamepadIndex) {
+      gamepadApi().GamepadModuleManager.enableContextModule(
+        gamepadIndex,
+        TinyUserInterfaceGamepadModule.defaultConfig.id,
+      );
+      this._data.glow = true;
+      promise = dfd.promise.then(async (x) => {
+        // only when no follow up selection took over the gamepad meanwhile
+        if (this._data.resolve === undefined) {
+          this._data.glow = false;
+          gamepadApi().GamepadModuleManager.disableContextModule(gamepadIndex);
+          if (!this._data.closed) {
+            await this.render();
+          }
         }
-        this.hook = Hooks.on("updateUser", async function(user:any){
-            if(user.id === userId) {
-                // @ts-ignore
-                this.render(true);
-            }
-        }.bind(this));
+        return x;
+      });
     }
+    this._data.selectData = selectData;
+    this._data.wheel = Math.max(0, Object.keys(selectData.choices).indexOf(selectData.selected ?? ""));
+    this._data.resolve = dfd.resolve;
+    await this.render();
+    return promise;
+  }
 
-    static DEFAULT_OPTIONS = {
-        id: NAMESPACE+"tiny-ui",
-        classes: [NAMESPACE, "tiny-user-interface"],
-        tag: "div",
-        position: {
-            width: 240,
-            height: 60
-        },
-        window: {
-            resizable: false,
-            title: `tiny-ui`,
-            frame: false,
-        }
+  /**
+   * may get called via gamepadmodule
+   * @param count
+   */
+  public rotateWheel(count: number) {
+    this._data.wheel += count;
+    const length = Object.values(this._data.selectData.choices).length;
+    this._data.wheel = Math.min(length - 1, Math.max(0, this._data.wheel));
+    const html: HTMLElement | undefined = this.element;
+    const wheel = html?.querySelector<HTMLElement>(".wheel");
+    if (!html || !wheel) {
+      return;
     }
-
-    static PARTS = {
-        content: {
-            template: `modules/${NAMESPACE}/templates/tiny-ui.hbs`,
-        }
+    // the current choice sits in the middle of three visible rows
+    wheel.style.transform = `translateY(${(1 - this._data.wheel) * WHEEL_STEP}px)`;
+    html.querySelectorAll(".select").forEach((el, index) => el.classList.toggle("current", index === this._data.wheel));
+    html.querySelector("a.up")?.classList.toggle("disabled", this._data.wheel === 0);
+    html.querySelector("a.down")?.classList.toggle("disabled", this._data.wheel >= length - 1);
+    const counter = html.querySelector(".count");
+    if (counter) {
+      counter.textContent = length > 1 ? `${this._data.wheel + 1}/${length}` : "";
     }
+  }
 
-    async render(forceOrOptions?: any): Promise<any> {
-        const opts = typeof forceOrOptions === 'boolean' ? { force: forceOrOptions } : (forceOrOptions ?? {});
-        return super.render(opts);
-    }
+  /**
+   * may get called via gamepadmodule
+   */
+  public async ok() {
+    const choice = Object.keys(this._data.selectData.choices)[this._data.wheel];
+    return this._choose(choice ?? null);
+  }
 
-    async _prepareContext(options: any = {}): Promise<any> {
-        return this.getData(options);
-    }
+  /**
+   * may get called via gamepadmodule
+   */
+  public async abort() {
+    return this._choose(null);
+  }
 
-    mySetPosition(position: { top?: number; left?: number }) {
-        const el: HTMLElement | undefined = (this as any).element as HTMLElement;
-        if (el) {
-            el.style.position = 'absolute';
-            if (typeof position.top === 'number') el.style.top = `${Math.max(position.top, 0)}px`;
-            if (typeof position.left === 'number') el.style.left = `${Math.max(position.left, 0)}px`;
-        }
-        return this;
-    }
-
-    getStoredPosition(){
-        const userData = this._settings.getUserData(this._data.userId);
-        return { top:  Math.min(document.body.offsetHeight-40,Math.max(userData.top, 0)),left: Math.min(document.body.offsetWidth-180,Math.max(userData.left,0))}
-    }
-
-    close(options?: any): Promise<void> {
-        const result = super.close(options);
-        Hooks.off("updateUser",this.hook);
-        return result;
-    }
-
-    get userId(){
-        return this._data.userId;
-    }
-
-    async getData(options = {}) {
-        const userData = this._settings.getUserData(this._data.userId);
-        return {
-            transform: userData.userPosition==="left"?"90deg":userData.userPosition==="top"?"180deg":userData.userPosition==="right"?"270deg":"0deg",
-            userData: userData,
-            user: (game as foundry.Game)["users"].get(this._data.userId),
-            choices: this._data.selectData.choices,
-            glow: this._data.glow
-        }
-    }
-
-    setPosition(options: any) {
-        if( this.element.parentElement) {
-            super.setPosition(options)
-        }
-    }
-
-    _onRender(context:any, options:any) {
-        this.setPosition(this.getStoredPosition());
-        const html = this.element as HTMLElement;
-        this._data.html = html;
-        html.querySelectorAll('.selection').forEach(el => {
-            el.addEventListener('wheel', (e: any) => {
-                const deltaY = (e as WheelEvent).deltaY ?? (e.originalEvent?.deltaY ?? 0);
-                if (deltaY > 0) this.rotateWheel(1);
-                if (deltaY < 0) this.rotateWheel(-1);
-            });
-        });
-        html.querySelectorAll('a.up').forEach(el => el.addEventListener('click', () => this.rotateWheel(1)));
-        html.querySelectorAll('a.down').forEach(el => el.addEventListener('click', () => this.rotateWheel(-1)));
-        html.querySelectorAll('.select').forEach(el => el.addEventListener('click', (e: any) => {
-            const target = e.currentTarget as HTMLElement;
-            const id = (target.dataset as any).key;
-            this._choose(id);
-        }));
-        html.querySelectorAll('.drag-me').forEach(el => el.addEventListener('mousedown', (e: any) => {
-            const appEl = (e.currentTarget as HTMLElement).closest('.beavers-tiny-ui') as HTMLElement;
-            if (!appEl) return;
-            dragElement(e, appEl)
-                .then(x => {
-                    const current:UserData =  this._settings.getUserData(this._data.userId);
-                    const diff = {top:current.top+x.top,left:current.left+x.left};
-                    this._settings.setUserData(this._data.userId, diff)
-                });
-        }));
-        Object.entries(this._data.selectData.choices).forEach(([key, value], index) => {
-            if (key === (this._data.selectData as any).selected) {
-                this._data.wheel = index;
-                this.rotateWheel(0);
-            }
-        });
-    }
-
-    public async select(selectData: SelectData):Promise<string> {
-        const gamepadIndex = this._settings.getGamepadIndexForUser(this.userId);
-        const dfd = new Deferred<string>();
-        let promise = dfd.promise;
-        if(gamepadIndex){
-            (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.enableContextModule(gamepadIndex,TinyUserInterfaceGamepadModule.defaultConfig.id);
-            this._data.glow = true;
-            promise = dfd.promise.then(x=>{
-                this._data.glow = false;
-                (game as ExtendedGame)[NAMESPACE].GamepadModuleManager.disableContextModule(gamepadIndex);
-                return this.render(true).then(y=>x);
-            })
-        }
-        this._data.selectData = selectData
-        this._data.resolve = dfd.resolve;
-        await this.render(true);
-        return promise;
-    }
-
-    /**
-     * may get called via gamepadmodule
-     * @param count
-     */
-    public rotateWheel(count: number) {
-        this._data.wheel += count;
-        const length = Object.values(this._data.selectData.choices).length;
-        this._data.wheel = Math.min(length - 1, Math.max(0, this._data.wheel))
-        const top = 7 - this._data.wheel * 16;
-        const root: HTMLElement | null = this._data.html as any;
-        const wheelEl = root ? (root.querySelector('.wheel') as HTMLElement) : null;
-        if (wheelEl) wheelEl.style.top = `${top}px`;
-    }
-
-    /**
-     * may get called via gamepadmodule
-     */
-    public async ok() {
-        const choice = Object.entries(this._data.selectData.choices)[this._data.wheel];
-        return this._choose(choice[0])
-    }
-
-    /**
-     * may get called via gamepadmodule
-     */
-    public async abort() {
-        return this._choose(null);
-    }
-
-    _choose(id:string | null) {
-        return this._reset()
-            .then(x=>{
-                if(this._data.resolve){
-                    this._data.resolve(id)
-                }
-            });
-    }
-
-    async _reset() {
-        this._data.selectData = {choices:{}};
-        this._data.wheel = 0;
-        return this.render(true);
-    }
-
+  async _choose(id: string | null) {
+    const resolve = this._data.resolve;
+    this._data.resolve = undefined;
+    this._data.selectData = { choices: {} };
+    this._data.wheel = 0;
+    await this.render();
+    resolve?.(id);
+  }
 }
 
 class Deferred<T> {
-    promise:Promise<T>;
-    reject: () => void = ()=> void 0;
-    resolve: (value: T) => void = (value:any) => void 0;
-    constructor() {
-        this.promise = new Promise((resolve, reject)=> {
-            this.reject = reject
-            this.resolve = resolve
-        })
-    }
+  promise: Promise<T>;
+  reject: () => void = () => void 0;
+  resolve: (value: T) => void = () => void 0;
+
+  constructor() {
+    this.promise = new Promise((resolve, reject) => {
+      this.reject = reject;
+      this.resolve = resolve;
+    });
+  }
 }
 
-function dragElement(event:any, elmnt:any):Promise<{top:number,left:number}> {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, top = elmnt.offsetTop-3, left = elmnt.offsetLeft;
-    const deferred = new Deferred<{top:number,left:number}>();
-    dragMouseDown(event);
-    return deferred.promise;
-    function dragMouseDown(e:any) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e:any) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        top = elmnt.offsetTop - pos2-3;
-        left = elmnt.offsetLeft - pos1
-        // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-    }
-
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        deferred.resolve({top:Math.max(top,0),left:Math.max(left,0)});
-    }
+/**
+ * moves the element with the mouse until the mouse button is released, resolves with its final position.
+ */
+function dragElement(event: MouseEvent, element: HTMLElement): Promise<{ top: number; left: number }> {
+  event.preventDefault();
+  const offsetX = event.clientX - element.offsetLeft;
+  const offsetY = event.clientY - element.offsetTop;
+  let top = element.offsetTop;
+  let left = element.offsetLeft;
+  return new Promise((resolve) => {
+    const onMove = (e: MouseEvent) => {
+      e.preventDefault();
+      top = Math.max(e.clientY - offsetY, 0);
+      left = Math.max(e.clientX - offsetX, 0);
+      element.style.top = `${top}px`;
+      element.style.left = `${left}px`;
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      resolve({ top, left });
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
 }
