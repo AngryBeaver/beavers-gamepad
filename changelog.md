@@ -1,3 +1,14 @@
+# 3.2.x free movement
+## 3.2.0
+- feature: move with the d-pad, the token movement module got d-pad bindings (also for gamepads that are configured already).
+- feature: setting "Gamepad movement: snap to grid": always (grid steps), at the end (walk freely, move to the closest free grid space on release) or never. Walking freely the speed follows how far the stick is pushed and the token slides along walls.
+- feature: walking freely the d-pad starts slow and speeds up the longer it is held, a short tap moves only a little. Grid steps with the d-pad walk with the top speed right away.
+- feature: top speed of the token movement per gamepad in grid spaces per second, the same on every scene.
+- feature: tokens smaller than a grid space walk on parts of it, e.g. half or third grid spaces.
+- feature: gamepad modules can have options in the gamepad configuration.
+- feature: setting "Keyboard gamepad (testing)": a virtual gamepad played with arrow keys (stick, shift: half way), IJKL (d-pad), Enter (A) and Backspace (B).
+- the settings of this module are stored as soon as they are changed.
+
 # 3.1.x detect bindings
 ## 3.1.0
 - feature: detect sticks and buttons by using them on the gamepad instead of typing in their numbers.

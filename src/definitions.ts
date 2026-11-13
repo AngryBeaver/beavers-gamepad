@@ -3,6 +3,7 @@ export const QUERY_UPDATE_USER = NAMESPACE + ".updateUser";
 export const HOOK_READY = NAMESPACE + ".ready";
 export const HOOK_GAMEPAD_CONNECTED = NAMESPACE + ".connected";
 export const USER_UI: string = "user_ui";
+export const MOVEMENT_SNAP = "movement_snap";
 
 // A gamepad that is seen for the first time starts with these modules, so it works without further setup.
 export const DEFAULT_MODULE_IDS = [

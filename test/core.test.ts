@@ -3,6 +3,17 @@ import { readAxis, seatAdjust, toDegree } from "../src/core/axes";
 import { CaptureSession, axisDirection, isNeutral, snapshot, type PadSnapshot } from "../src/core/capture";
 import { reconcileGamepadConfigs, withStoredBinding } from "../src/core/config";
 import { doorsInFront, stepBack } from "../src/core/door";
+import {
+  freeStep,
+  gridDirection,
+  moveInput,
+  rampStrength,
+  slideAlternatives,
+  snapCandidates,
+  snapCell,
+  snapToCell,
+  stickForStrength,
+} from "../src/core/movement";
 
 const pad = (buttons: number[], axes: number[]): PadSnapshot => ({ buttons, axes });
 
@@ -195,7 +206,7 @@ describe("withStoredBinding", () => {
       modules: { move: { ...defaultConfig, binding: stored } },
     };
     const result = withStoredBinding(defaultConfig, gamepadConfig);
-    expect(result.binding).toBe(stored);
+    expect(result.binding).toEqual(stored);
     expect(result.name).toBe("Move");
     expect(defaultConfig.binding.axes.x.index).toBe("0");
   });
@@ -204,6 +215,117 @@ describe("withStoredBinding", () => {
     const result = withStoredBinding(defaultConfig, { userId: "", gamepadId: "A", modules: {} });
     expect(result.binding).toEqual(defaultConfig.binding);
     expect(result.binding).not.toBe(defaultConfig.binding);
+  });
+});
+
+describe("withStoredBinding merges new defaults", () => {
+  const defaultConfig: GamepadModuleConfig = {
+    id: "move",
+    name: "Move",
+    binding: {
+      axes: { x: { index: "0", reversed: false } },
+      buttons: { up: { index: "12", label: "d-pad up:" } },
+    },
+    options: { snap: { label: "Snap", value: "always", choices: { always: "a", never: "n" } } },
+  };
+
+  // gamepads configured before the d-pad existed must get it without being configured again
+  it("adds bindings and options the stored config does not know yet", () => {
+    const gamepadConfig: GamepadConfig = {
+      userId: "",
+      gamepadId: "A",
+      modules: {
+        move: { id: "move", name: "Move", binding: { axes: { x: { index: "3", reversed: true } }, buttons: {} } },
+      },
+    };
+    const result = withStoredBinding(defaultConfig, gamepadConfig);
+    expect(result.binding.axes.x).toEqual({ index: "3", reversed: true });
+    expect(result.binding.buttons.up).toEqual({ index: "12", label: "d-pad up:" });
+    expect(result.options?.snap.value).toBe("always");
+  });
+
+  it("takes the stored value of an option but the label of the module", () => {
+    const gamepadConfig: GamepadConfig = {
+      userId: "",
+      gamepadId: "A",
+      modules: {
+        move: {
+          id: "move",
+          name: "Move",
+          binding: { axes: {}, buttons: { up: { index: 7 } as any } },
+          options: { snap: { value: "never", label: "old" } },
+        },
+      },
+    };
+    const result = withStoredBinding(defaultConfig, gamepadConfig);
+    expect(result.options?.snap).toEqual({ ...defaultConfig.options!.snap, value: "never" });
+    expect(result.binding.buttons.up).toEqual({ index: 7, label: "d-pad up:" });
+    expect(defaultConfig.options!.snap.value).toBe("always");
+  });
+});
+
+describe("movement", () => {
+  const none = { x: 0, y: 0 };
+
+  it("ignores a stick resting in the deadzone", () => {
+    expect(moveInput({ x: 0.1, y: -0.1 }, none).strength).toBe(0);
+  });
+
+  it("the strength grows with how far the stick is pushed", () => {
+    const half = moveInput({ x: 0.6, y: 0 }, none);
+    const full = moveInput({ x: 1, y: 0 }, none);
+    expect(half.strength).toBeCloseTo(0.5);
+    expect(full.strength).toBe(1);
+    expect(full.direction).toEqual({ x: 1, y: 0 });
+  });
+
+  it("a diagonal is not faster than a straight line", () => {
+    const diagonal = moveInput({ x: 1, y: 1 }, none);
+    expect(diagonal.strength).toBe(1);
+    expect(Math.hypot(diagonal.direction.x, diagonal.direction.y)).toBeCloseTo(1);
+  });
+
+  it("the d-pad walks at full strength and wins over the stick", () => {
+    const input = moveInput({ x: 0.5, y: 0 }, { x: 0, y: -1 });
+    expect(input).toEqual({ direction: { x: 0, y: -1 }, strength: 1 });
+  });
+
+  it("gridDirection knows 8 directions", () => {
+    expect(gridDirection(moveInput({ x: 1, y: 0.2 }, none))).toEqual({ x: 1, y: 0 });
+    expect(gridDirection(moveInput({ x: 0.7, y: -0.7 }, none))).toEqual({ x: 1, y: -1 });
+    expect(gridDirection(moveInput({ x: -0.1, y: 0.9 }, none))).toEqual({ x: 0, y: 1 });
+  });
+
+  it("a token smaller than a grid space divides the grid", () => {
+    expect(snapCell(100, 1, 1)).toEqual({ w: 100, h: 100 });
+    expect(snapCell(100, 3, 2)).toEqual({ w: 100, h: 100 });
+    expect(snapCell(100, 0.5, 0.5)).toEqual({ w: 50, h: 50 });
+    expect(snapCell(90, 1 / 3, 1 / 3)).toEqual({ w: 30, h: 30 });
+  });
+
+  it("snaps to the closest cell", () => {
+    expect(snapToCell({ x: 140, y: 160 }, { w: 100, h: 100 })).toEqual({ x: 100, y: 200 });
+    expect(snapToCell({ x: 140, y: 160 }, { w: 50, h: 50 })).toEqual({ x: 150, y: 150 });
+  });
+
+  it("snapCandidates starts with the closest cell", () => {
+    const candidates = snapCandidates({ x: 140, y: 160 }, { w: 100, h: 100 });
+    expect(candidates[0]).toEqual({ x: 100, y: 200 });
+    expect(candidates).toHaveLength(16);
+    expect(candidates).toContainEqual({ x: 200, y: 100 });
+  });
+
+  it("freeStep walks the distance into the direction of the stick", () => {
+    expect(freeStep({ x: 100, y: 100 }, moveInput({ x: 0, y: 1 }, none), 30)).toEqual({ x: 100, y: 130 });
+  });
+
+  it("slides along a wall with the axis the stick points to more first", () => {
+    expect(slideAlternatives({ x: 0, y: 0 }, { x: 10, y: 4 })).toEqual([
+      { x: 10, y: 4 },
+      { x: 10, y: 0 },
+      { x: 0, y: 4 },
+    ]);
+    expect(slideAlternatives({ x: 0, y: 0 }, { x: 10, y: 0 })).toEqual([{ x: 10, y: 0 }]);
   });
 });
 
@@ -230,5 +352,23 @@ describe("doors", () => {
   it("stepBack stops a few pixels before the target", () => {
     expect(stepBack({ x: 0, y: 0 }, { x: 100, y: 0 }, 5)).toEqual({ x: 95, y: 0 });
     expect(stepBack({ x: 0, y: 0 }, { x: 3, y: 0 }, 5)).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe("ramp", () => {
+  it("a button starts slow and reaches full strength when held long enough", () => {
+    expect(rampStrength(0)).toBeGreaterThan(0);
+    expect(rampStrength(0)).toBeLessThan(0.1);
+    expect(rampStrength(1000)).toBeCloseTo(0.525);
+    expect(rampStrength(5000)).toBe(1);
+  });
+
+  it("the d-pad walks with the strength it got", () => {
+    expect(moveInput({ x: 0, y: 0 }, { x: 1, y: 0 }, 0.3).strength).toBe(0.3);
+  });
+
+  it("stickForStrength is the inverse of the stick strength", () => {
+    expect(moveInput({ x: stickForStrength(0.4), y: 0 }, { x: 0, y: 0 }).strength).toBeCloseTo(0.4);
+    expect(moveInput({ x: stickForStrength(rampStrength(0)), y: 0 }, { x: 0, y: 0 }).strength).toBeGreaterThan(0);
   });
 });

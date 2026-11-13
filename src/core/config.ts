@@ -40,15 +40,41 @@ export function reconcileGamepadConfigs(
   return { configs, changed };
 }
 
-/** A module configuration for one gamepad: the module's defaults with the bindings stored for that gamepad. */
+/**
+ * A module configuration for one gamepad: the module's defaults with the bindings and option values stored for that
+ * gamepad. Bindings and options a module got in a later version are added with their defaults.
+ */
 export function withStoredBinding(
   defaultConfig: GamepadModuleConfig,
   gamepadConfig: GamepadConfig,
 ): GamepadModuleConfig {
-  return {
-    ...defaultConfig,
-    binding: gamepadConfig.modules[defaultConfig.id]?.binding ?? clone(defaultConfig.binding),
+  const stored = gamepadConfig.modules[defaultConfig.id];
+  const defaults = clone(defaultConfig);
+  const merge = <T extends object>(base: { [name: string]: T }, own: { [name: string]: Partial<T> } = {}) => {
+    const result: { [name: string]: T } = { ...base };
+    for (const [name, value] of Object.entries(own)) {
+      result[name] = { ...base[name], ...value } as T;
+    }
+    return result;
   };
+  const result: GamepadModuleConfig = {
+    ...defaults,
+    binding: {
+      axes: merge(defaults.binding.axes, stored?.binding?.axes),
+      buttons: merge(defaults.binding.buttons, stored?.binding?.buttons),
+    },
+  };
+  if (defaults.options) {
+    const options = { ...defaults.options };
+    for (const [name, option] of Object.entries(defaults.options)) {
+      const value = stored?.options?.[name]?.value;
+      if (value !== undefined && value !== null && value !== "") {
+        options[name] = { ...option, value: value };
+      }
+    }
+    result.options = options;
+  }
+  return result;
 }
 
 export const cloneModuleConfig = (config: GamepadModuleConfig): GamepadModuleConfig => clone(config);

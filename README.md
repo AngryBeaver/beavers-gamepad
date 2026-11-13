@@ -18,7 +18,7 @@ Initially this module comes with a collection of submodules that let you choose 
 beavers-gamepad is built as framework to host submodules named GamepadModules.
 GamepadModules then assignes actions to axes or buttons.
 beavers-gamepad provides at least five GamepadModules:
-- "Beaver's Token movement" which allows to move a token around.
+- "Beaver's Token movement" which allows to move a token around with the left stick or the d-pad. In the module settings "Gamepad movement: snap to grid" chooses whether tokens walk from grid space to grid space, walk freely and snap to the closest free grid space when released, or walk freely. Walking freely, the further the stick is pushed the faster the token walks. The d-pad starts slow and speeds up the longer it is held, a short tap moves only a little. Grid steps with the d-pad walk with the top speed right away. The top speed is set per gamepad in grid spaces per second, so it is the same on every scene. Tokens smaller than a grid space walk on parts of it.
 - "Beaver's Token rotation" which allows to rotate a token.
 - "Beavers open doors" open nearest door in close range same as in tinyUIModule
 - "Activate Tiny-User-Interface" which activates a user Context menu.
@@ -128,6 +128,9 @@ Or a gamemaster can do this by editing the global user-configuration of vtt-foun
 
 After Setting everything up i usually us Monks Common Display module and activate it on my map user to get rid of any other ui components.
 
+
+### Testing without a gamepad
+Enable "Keyboard gamepad (testing)" in the module settings. A virtual gamepad shows up in the gamepad configuration and can be assigned to a user like a real one: arrow keys are the left stick pushed all the way (with shift: half way), I J K L the d-pad, Enter the (A) and Backspace the (B) button. While enabled these keys do not reach foundry.
 
 ## Limitations
 ### Detect Gamepads Missing

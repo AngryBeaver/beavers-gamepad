@@ -10,6 +10,10 @@
         "hint": "Where the players sit around this screen and where their Tiny-User-Interface is shown.",
         "label": "Configure users"
       },
+      "keyboardGamepad": {
+        "name": "Keyboard gamepad (testing)",
+        "hint": "Adds a virtual gamepad that is played with the keyboard, to try out the gamepad modules without a gamepad. Arrow keys: left stick pushed all the way (with shift: half way), I J K L: d-pad, Enter: A, Backspace: B. While active these keys do not reach foundry. Assign it to a user in the gamepad configuration like a real gamepad."
+      },
       "gamepadConfig": {
         "name": "Gamepad Configuration",
         "hint": "Assign the connected gamepads to users and choose what their sticks and buttons do.",
@@ -67,7 +71,18 @@
       "desc2": "This module activates Tiny-User-Interface"
     },
     "TokenMovement": {
-      "desc": "this module allows to move your token"
+      "desc": "this module allows to move your token with the stick or the d-pad",
+      "snap": {
+        "label": "Gamepad movement: snap to grid",
+        "hint": "How tokens moved with a gamepad stick or d-pad use the grid. always: the token walks from grid space to grid space. at the end: the token walks freely and moves to the closest free grid space when you let go. never: the token walks freely. A token smaller than a grid space walks on parts of it, e.g. half a grid space for a token of half the width.",
+        "always": "always",
+        "end": "at the end",
+        "never": "never"
+      },
+      "speed": {
+        "label": "Speed",
+        "hint": "Top speed in grid spaces per second, the same on every scene regardless of the size of its grid spaces. Pushing the stick only a little walks slower. Walking freely (snap to grid: at the end or never) the d-pad starts slow and reaches the top speed when held for 2 seconds, grid steps with the d-pad walk with the top speed right away."
+      }
     },
     "TokenRotation": {
       "desc": "this module allows to control the direction your token is facing"

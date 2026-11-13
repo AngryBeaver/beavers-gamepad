@@ -90,6 +90,28 @@
                             {{/if}}
                         </div>
                     {{/each}}
+                    {{#each module.options as |option|}}
+                        <div class="form-group module-option">
+                            <label>{{localize option.label}}</label>
+                            <div class="form-fields">
+                                {{#if option.isSelect}}
+                                    <select name="{{option.name}}">
+                                        {{selectOptions option.choices selected=option.value localize=true}}
+                                    </select>
+                                {{else if option.isBoolean}}
+                                    <input type="checkbox" name="{{option.name}}" {{checked option.value}}/>
+                                {{else if option.isNumber}}
+                                    <input type="number" name="{{option.name}}" value="{{option.value}}"
+                                           min="{{option.min}}" max="{{option.max}}" step="{{option.step}}"/>
+                                {{else}}
+                                    <input type="text" name="{{option.name}}" value="{{option.value}}"/>
+                                {{/if}}
+                            </div>
+                            {{#if option.hint}}
+                                <p class="hint">{{localize option.hint}}</p>
+                            {{/if}}
+                        </div>
+                    {{/each}}
                 </fieldset>
             {{/each}}
             {{#if pad.addable.length}}

@@ -41,8 +41,25 @@ interface GamepadModuleConfig {
   isContextModule?: boolean;
   //describes the module. can be an i18n language key
   desc?: string;
+  //further settings of the module per gamepad, shown in the gamepad configuration below the bindings.
+  options?: {
+    [name: string]: GamepadModuleOption;
+  };
 
   [key: string]: any;
+}
+
+interface GamepadModuleOption {
+  //can be an i18n language key
+  label: string;
+  hint?: string;
+  value: string | number | boolean;
+  //a select box with these choices, values are i18n language keys
+  choices?: { [value: string]: string };
+  //for number inputs
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 interface GamepadModuleConfigBinding {

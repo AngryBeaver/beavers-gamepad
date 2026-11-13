@@ -8,7 +8,7 @@ import {
   isNeutral,
   snapshot,
 } from "../core/capture";
-import { cloneModuleConfig } from "../core/config";
+import { cloneModuleConfig, withStoredBinding } from "../core/config";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -99,8 +99,10 @@ export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
       users: game.users.contents
         .filter((user: any) => user.id === config.userId || !assigned.has(user.id))
         .map((user: any) => ({ id: user.id, name: user.name, selected: user.id === config.userId })),
-      modules: Object.entries(config.modules).map(([moduleId, moduleConfig]) => {
+      modules: Object.entries(config.modules).map(([moduleId, storedConfig]) => {
         const defaultConfig = this.gamepadModules[moduleId]?.defaultConfig;
+        // bindings and options a module got in a later version show up with their defaults
+        const moduleConfig = defaultConfig ? withStoredBinding(defaultConfig, config) : storedConfig;
         const binding = (kind: CaptureKind, name: string, data: any) => {
           const path = bindingPath({ gamepadIndex: index, moduleId, kind, name });
           return {
@@ -123,6 +125,13 @@ export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
             ...Object.entries(moduleConfig.binding.axes).map(([name, data]) => binding("axes", name, data)),
             ...Object.entries(moduleConfig.binding.buttons).map(([name, data]) => binding("buttons", name, data)),
           ],
+          options: Object.entries(defaultConfig ? (moduleConfig.options ?? {}) : {}).map(([name, option]) => ({
+            ...option,
+            name: `${index}.modules.${moduleId}.options.${name}.value`,
+            isSelect: !!option.choices,
+            isNumber: typeof option.value === "number",
+            isBoolean: typeof option.value === "boolean",
+          })),
         };
       }),
       addable: Object.entries(this.gamepadModules)
@@ -226,8 +235,12 @@ export class GamepadConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
   static async onDetectAll(this: GamepadConfigApp, event: Event, target: HTMLElement) {
     const gamepadIndex = target.dataset.gamepad as string;
     const moduleId = target.dataset.module as string;
-    const binding = this.gamepadConfigs[gamepadIndex]?.modules[moduleId]?.binding;
-    if (!binding) return;
+    const gamepadConfig = this.gamepadConfigs[gamepadIndex];
+    const defaultConfig = this.gamepadModules[moduleId]?.defaultConfig;
+    if (!gamepadConfig?.modules[moduleId]) return;
+    const binding = defaultConfig
+      ? withStoredBinding(defaultConfig, gamepadConfig).binding
+      : gamepadConfig.modules[moduleId].binding;
     await this._startCapture([
       ...Object.keys(binding.axes).map((name) => ({ gamepadIndex, moduleId, kind: "axes" as CaptureKind, name })),
       ...Object.keys(binding.buttons).map((name) => ({ gamepadIndex, moduleId, kind: "buttons" as CaptureKind, name })),
