@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readAxis, seatAdjust, toDegree } from "../src/core/axes";
 import { CaptureSession, axisDirection, isNeutral, snapshot, type PadSnapshot } from "../src/core/capture";
-import { reconcileGamepadConfigs, withStoredBinding } from "../src/core/config";
+import { claimCandidates, reconcileGamepadConfigs, withStoredBinding } from "../src/core/config";
 import { doorsInFront, stepBack } from "../src/core/door";
 import {
   freeStep,
@@ -370,5 +370,42 @@ describe("ramp", () => {
   it("stickForStrength is the inverse of the stick strength", () => {
     expect(moveInput({ x: stickForStrength(0.4), y: 0 }, { x: 0, y: 0 }).strength).toBeCloseTo(0.4);
     expect(moveInput({ x: stickForStrength(rampStrength(0)), y: 0 }, { x: 0, y: 0 }).strength).toBeGreaterThan(0);
+  });
+});
+
+describe("claimCandidates", () => {
+  const config = (gamepadId: string, userId: string): GamepadConfig => ({ userId, gamepadId, modules: {} });
+
+  it("asks nothing when no other gamepad of the model is off", () => {
+    const configs = { "0": config("X", "u1"), "1": config("X", "u2") };
+    expect(claimCandidates(configs, ["1"], "0")).toEqual([]);
+  });
+
+  it("offers the own user and the users of all free seats of the same model", () => {
+    const configs = { "0": config("X", "u1"), "1": config("X", "u2"), "2": config("X", "u3"), "3": config("Y", "u4") };
+    expect(claimCandidates(configs, [], "0")).toEqual(["u1", "u2", "u3"]);
+  });
+
+  it("leaves out seats of the model that are taken by a connected gamepad", () => {
+    const configs = { "0": config("X", "u1"), "1": config("X", "u2"), "2": config("X", "u3") };
+    expect(claimCandidates(configs, ["2"], "0")).toEqual(["u1", "u2"]);
+  });
+
+  it("asks nothing when only one user is possible", () => {
+    expect(claimCandidates({ "0": config("X", ""), "1": config("X", "u2") }, [], "0")).toEqual([]);
+    expect(claimCandidates({ "0": config("X", "u1"), "1": config("X", "") }, [], "0")).toEqual([]);
+  });
+
+  it("asks for a gamepad without a user when several free seats of its model have one", () => {
+    const configs = { "0": config("X", ""), "1": config("X", "u2"), "2": config("X", "u3") };
+    expect(claimCandidates(configs, [], "0")).toEqual(["u2", "u3"]);
+  });
+
+  it("asks nothing for a gamepad that was never configured", () => {
+    expect(claimCandidates({ "1": config("X", "u2"), "2": config("X", "u3") }, [], "0")).toEqual([]);
+  });
+
+  it("asks nothing for a gamepad of a model that is unique", () => {
+    expect(claimCandidates({ "0": config("X", "u1"), "1": config("Y", "u2") }, [], "0")).toEqual([]);
   });
 });

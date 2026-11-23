@@ -1,5 +1,5 @@
 import { BeaversGamepadManager } from "./apps/BeaversGamepadManager";
-import { HOOK_READY, NAMESPACE, QUERY_UPDATE_USER } from "./definitions";
+import { HOOK_READY, NAMESPACE, QUERY_CLAIM_GAMEPAD, QUERY_UPDATE_USER } from "./definitions";
 import { GamepadSettings } from "./GamepadSettings";
 import { DND5e } from "./systems/DND5e";
 import { GamepadModuleManager } from "./apps/GamepadModuleManager";
@@ -11,6 +11,7 @@ import { OpenDoorUI } from "./apps/OpenDoorUI";
 import { OpenDoorGamepadModule } from "./modules/OpenDoorGamepadModule";
 import { TokenRotation } from "./modules/TokenRotation";
 import { TokenMovement } from "./modules/TokenMovement";
+import { GamepadClaim, handleClaimGamepadQuery } from "./apps/GamepadClaim";
 
 Hooks.once("init", () => {
   game[NAMESPACE] = game[NAMESPACE] || {};
@@ -18,6 +19,7 @@ Hooks.once("init", () => {
   game[NAMESPACE].TinyUIModuleManager = new TinyUIModuleManager();
   game[NAMESPACE].Settings = new GamepadSettings();
   CONFIG.queries[QUERY_UPDATE_USER] = handleUpdateUserQuery;
+  CONFIG.queries[QUERY_CLAIM_GAMEPAD] = handleClaimGamepadQuery;
 });
 
 Hooks.once("ready", () => {
@@ -29,6 +31,7 @@ Hooks.once("ready", () => {
   }
   // other vtt-modules register their gamepadmodules and uimodules in this hook
   Hooks.callAll(HOOK_READY, game[NAMESPACE].GamepadModuleManager);
+  new GamepadClaim();
   game[NAMESPACE].GamepadManager = new BeaversGamepadManager();
   game[NAMESPACE].GamepadModuleManager.updateGamepadModuleInstance();
   game[NAMESPACE].TinyUIModuleManager.updateUIModules();

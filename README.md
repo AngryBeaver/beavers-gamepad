@@ -129,6 +129,28 @@ Or a gamemaster can do this by editing the global user-configuration of vtt-foun
 After Setting everything up i usually us Monks Common Display module and activate it on my map user to get rid of any other ui components.
 
 
+### Gamepads that fall asleep
+Gamepads turn themselves off when they are not used for a while, and they wake up in any order. The browser hands out no serial number, it only knows the model of a gamepad, e.g. two PS4 gamepads look the same, and on Windows all Xbox-like (XInput) gamepads look the same, including PlayStation gamepads that run through DS4Windows, DsHidMini or SCP in XInput mode.
+
+- A gamepad that wakes up while the other gamepads of its model are still on gets its user back on its own.
+- A gamepad that wakes up while **several gamepads of its model are off** can not be told apart from them. Somebody is asked who is playing with it, meanwhile the gamepad is paused so it does not move the token of somebody else. The answer swaps the seats (user and bindings) of the gamepads.
+
+Who is asked is set by the client setting "Ask who plays a reconnected gamepad" of the table screen:
+- **Ask the gamemaster** (default): the gamemaster gets a window with one card per possible player, looks who just turned a gamepad on and clicks that card. Closing the window keeps the user the gamepad got. Is no gamemaster online, or is the table screen itself logged in as gamemaster, the question is asked on the table screen.
+
+![img.png](pictures/reconnectGamemaster.png)
+
+- **Ask on this screen**: the question covers the table screen. Pick your card with the stick or the d-pad of the gamepad that woke up and press (A), or tap your card on a touch screen. (B) or the X keeps the user the gamepad got.
+
+![img.png](pictures/reconnectScreen.png)
+
+- **Do not ask**: the gamepad keeps the seat it got, fix it in the gamepad configuration if needed.
+
+Less waking up means less asking. A rumble from the browser does not keep a gamepad awake, it only counts the buttons and sticks you use, but the timeout of some can be changed:
+- PS3 gamepads with DsHidMini: the idle disconnect can be turned off or lengthened in the DsHidMini control app.
+- PS4 gamepads: Windows does not turn them off, DS4Windows (profile, other, idle disconnect: 0) or Steam does.
+- Xbox gamepads turn themselves off after about 15 minutes, this can not be changed.
+
 ### Testing without a gamepad
 Enable "Keyboard gamepad (testing)" in the module settings. A virtual gamepad shows up in the gamepad configuration and can be assigned to a user like a real one: arrow keys are the left stick pushed all the way (with shift: half way), I J K L the d-pad, Enter the (A) and Backspace the (B) button. While enabled these keys do not reach foundry.
 
@@ -144,7 +166,7 @@ This module depends on the browsers ability to detect gamepads, i can not do muc
 ### Linking physical Gamepad to Configuration
 - Gamepads of the same model report the same identification, so the list can not tell them apart by name.
   - The name of a gamepad lights up in the gamepad configuration while one of its buttons is held down, and gamepads that support it can be made to rumble with the icon next to their name.
-- The browser numbers the gamepads in the order they wake up. A gamepad that shows up under another number takes its configuration with it, two gamepads of the same model may swap their users though.
+- The browser numbers the gamepads in the order they wake up. A gamepad that shows up under another number takes its configuration with it. Two gamepads of the same model may swap their users, then the module asks who plays which, see [Gamepads that fall asleep](#gamepads-that-fall-asleep).
 
 ## Extensions
 You can write own GamepadModules or TinyUiModules. There will be a section on how to do this as soon as the interfaces are more established. Currently everything might still be in the flow.

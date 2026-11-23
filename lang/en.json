@@ -10,6 +10,13 @@
         "hint": "Where the players sit around this screen and where their Tiny-User-Interface is shown.",
         "label": "Configure users"
       },
+      "askUserOnReconnect": {
+        "name": "Ask who plays a reconnected gamepad",
+        "hint": "Gamepads of the same model can not be told apart, e.g. two PS4 gamepads, and on Windows all Xbox-like (XInput) gamepads look the same. When such a gamepad wakes up while several gamepads of its model are off, it may get the user of another one. Then somebody is asked who is playing with it, meanwhile the gamepad is paused. Without a gamemaster online the question is asked on this screen.",
+        "gamemaster": "Ask the gamemaster",
+        "screen": "Ask on this screen",
+        "off": "Do not ask"
+      },
       "keyboardGamepad": {
         "name": "Keyboard gamepad (testing)",
         "hint": "Adds a virtual gamepad that is played with the keyboard, to try out the gamepad modules without a gamepad. Arrow keys: left stick pushed all the way (with shift: half way), I J K L: d-pad, Enter: A, Backspace: B. While active these keys do not reach foundry. Assign it to a user in the gamepad configuration like a real gamepad."
@@ -19,6 +26,13 @@
         "hint": "Assign the connected gamepads to users and choose what their sticks and buttons do.",
         "label": "Configure gamepads"
       }
+    },
+    "claim": {
+      "title": "Who plays this gamepad?",
+      "question": "A gamepad woke up while several gamepads of its model are off. Who is playing with it?",
+      "gmHint": "Look who just turned a gamepad on. Closing this keeps the user it got.",
+      "screenHint": "Pick with the stick or d-pad and press (A), or tap your card. (B) keeps the user.",
+      "keep": "Keep the user it got"
     },
     "position": {
       "bottom": "bottom",

@@ -1,4 +1,5 @@
 /* monks-common-display hides every direct child of body, the tiny user interfaces have to stay */
+body.hide-ui > .beavers-gamepad-claim:not(#alot):not(#of):not(#things):not(#to):not(#have):not(#more):not(#specificity):not(#then):not(#monk):not(#logo):not(#interface):not(#board):not(#hud):not(#ui-left):not(#ui-middle):not(#ui-right):not(#confetti-canvas):not(#dice-box-canvas):not(#pause):not(#notifications):not(#narrator):not(#combat-popout):not(.image-popout):not(.journal-sheet):not(.journal-attached):not(#slideshow-display):not(#slideshow-canvas):not(#combat-carousel):not(#levels3d):not(#av-config):not(#camera-views):not(#combat-dock):not(#conversation-hud-background):not(.story-sheet):not(#boss-bar):not(#epic-roll-5e):not(.bossOverlay):not(#theatre-group),
 body.hide-ui > .beavers-tiny-ui:not(#alot):not(#of):not(#things):not(#to):not(#have):not(#more):not(#specificity):not(#then):not(#monk):not(#logo):not(#interface):not(#board):not(#hud):not(#ui-left):not(#ui-middle):not(#ui-right):not(#confetti-canvas):not(#dice-box-canvas):not(#pause):not(#notifications):not(#narrator):not(#combat-popout):not(.image-popout):not(.journal-sheet):not(.journal-attached):not(#slideshow-display):not(#slideshow-canvas):not(#combat-carousel):not(#levels3d):not(#av-config):not(#camera-views):not(#combat-dock):not(#conversation-hud-background):not(.story-sheet):not(#boss-bar):not(#epic-roll-5e):not(.bossOverlay):not(#theatre-group){
     display: flex !important
 }
@@ -216,4 +217,165 @@ body.hide-ui > .beavers-tiny-ui:not(#alot):not(#of):not(#things):not(#to):not(#h
 .beavers-gamepad .gamepad-raw{
     margin: 0;
     font-variant-numeric: tabular-nums;
+}
+
+/* who plays a gamepad that woke up, see GamepadClaimPicker */
+.beavers-gamepad-claim{
+    --claim-blue: #3aa0ff;
+    --claim-glow: rgba(58, 160, 255, 0.75);
+}
+.beavers-gamepad-claim .claim-question{
+    margin: 0;
+    text-align: center;
+}
+.beavers-gamepad-claim .claim-model{
+    margin: 0.25rem 0 1rem;
+    text-align: center;
+    font-size: var(--font-size-12, 12px);
+    opacity: 0.6;
+}
+.beavers-gamepad-claim .claim-hint{
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-size: var(--font-size-12, 12px);
+    opacity: 0.75;
+}
+.beavers-gamepad-claim .claim-cards{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+.beavers-gamepad-claim .claim-card{
+    --user-color: #888888;
+    position: relative;
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #fff;
+    border: 3px solid transparent;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    touch-action: manipulation;
+    user-select: none;
+}
+.beavers-gamepad-claim .claim-card img{
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: top;
+    border: none;
+    border-radius: 0;
+    background: linear-gradient(160deg, #eef5ff, #cfe2fb);
+}
+.beavers-gamepad-claim .claim-names{
+    display: flex;
+    flex-direction: column;
+    padding: 6px 8px 8px;
+    border-top: 5px solid var(--user-color);
+    color: #1b2433;
+    text-align: center;
+}
+.beavers-gamepad-claim .claim-character{
+    font-weight: bold;
+    font-size: 1.05em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.beavers-gamepad-claim .claim-user{
+    font-size: 0.85em;
+    opacity: 0.75;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.beavers-gamepad-claim .claim-card:hover{
+    transform: translateY(-2px);
+}
+.beavers-gamepad-claim .claim-card.current{
+    border-color: var(--claim-blue);
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px #fff, 0 0 28px 8px var(--claim-glow);
+}
+
+/* on the table screen: the whole screen is blurred, the question shines in the middle */
+.beavers-gamepad-claim.overlay{
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-index-app, 100) + 1000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(20, 60, 120, 0.25), rgba(5, 10, 25, 0.65));
+    backdrop-filter: blur(10px) saturate(0.8);
+    -webkit-backdrop-filter: blur(10px) saturate(0.8);
+    pointer-events: all;
+    animation: beavers-claim-fade 250ms ease-out;
+}
+.beavers-gamepad-claim.overlay .claim-panel{
+    position: relative;
+    max-width: min(90vw, 900px);
+    padding: 24px 32px 20px;
+    border-radius: 24px;
+    color: #1b2433;
+    background: linear-gradient(160deg, #ffffff 0%, #f3f8ff 45%, #e3efff 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        inset 0 1px 0 #fff,
+        0 0 0 2px rgba(58, 160, 255, 0.5),
+        0 0 40px 10px var(--claim-glow),
+        0 0 120px 30px rgba(58, 160, 255, 0.35);
+    overflow: hidden;
+    animation: beavers-claim-pop 300ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+/* the shine: a soft light that runs across the panel */
+.beavers-gamepad-claim.overlay .claim-panel::before{
+    content: "";
+    position: absolute;
+    inset: -50% auto -50% -60%;
+    width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    transform: rotate(12deg);
+    animation: beavers-claim-shine 3.5s ease-in-out infinite;
+    pointer-events: none;
+}
+.beavers-gamepad-claim.overlay h2{
+    margin: 0 0 0.5rem;
+    border: none;
+    text-align: center;
+    font-size: 1.8em;
+    color: #0f5bb5;
+    text-shadow: 0 0 12px rgba(58, 160, 255, 0.45);
+}
+.beavers-gamepad-claim.overlay .claim-question{
+    font-size: 1.1em;
+}
+.beavers-gamepad-claim.overlay .claim-hint{
+    opacity: 0.65;
+}
+.beavers-gamepad-claim.overlay .claim-keep{
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 1.6em;
+    color: #5b6b82;
+    cursor: pointer;
+    z-index: 1;
+}
+.beavers-gamepad-claim.overlay .claim-card{
+    width: 170px;
+}
+@keyframes beavers-claim-fade{
+    from{ opacity: 0; }
+}
+@keyframes beavers-claim-pop{
+    from{ transform: scale(0.85); opacity: 0; }
+}
+@keyframes beavers-claim-shine{
+    0%{ left: -60%; }
+    60%, 100%{ left: 130%; }
 }

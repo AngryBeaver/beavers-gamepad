@@ -1,0 +1,22 @@
+<div class="claim-picker">
+    <div class="claim-panel">
+        {{#if overlay}}
+            <a class="claim-keep" data-tooltip="{{localize "beaversGamepad.claim.keep"}}"><i class="fa-solid fa-xmark"></i></a>
+            <h2><i class="fa-solid fa-gamepad"></i> {{title}}</h2>
+        {{/if}}
+        <p class="claim-question">{{question}}</p>
+        <p class="claim-model"><i class="fa-solid fa-gamepad"></i> {{model}}</p>
+        <div class="claim-cards">
+            {{#each choices}}
+                <div class="claim-card {{#if current}}current{{/if}}" data-user="{{id}}" style="--user-color: {{color}}">
+                    <img src="{{img}}" alt=""/>
+                    <div class="claim-names">
+                        {{#if characterName}}<span class="claim-character">{{characterName}}</span>{{/if}}
+                        <span class="claim-user">{{userName}}</span>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        <p class="claim-hint">{{hint}}</p>
+    </div>
+</div>

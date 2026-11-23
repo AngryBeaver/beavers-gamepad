@@ -78,3 +78,23 @@ export function withStoredBinding(
 }
 
 export const cloneModuleConfig = (config: GamepadModuleConfig): GamepadModuleConfig => clone(config);
+
+/**
+ * The browser hands out no serial number, gamepads of the same model can not be told apart. A gamepad that
+ * (re)connects got the seat of a gamepad of its model that was not connected, see reconcileGamepadConfigs, but when
+ * several of those seats were free, it may have taken the wrong one.
+ * Returns the users that may be playing with the gamepad: the users of its own seat and of the free seats of its
+ * model. Empty when there is nothing to choose.
+ */
+export function claimCandidates(configs: GamepadConfigs, connected: string[], gamepadIndex: string): string[] {
+  const own = configs[gamepadIndex];
+  if (!own) return [];
+  const users = new Set<string>();
+  for (const [index, config] of Object.entries(configs)) {
+    const free = index === gamepadIndex || !connected.includes(index);
+    if (config.gamepadId === own.gamepadId && config.userId && free) {
+      users.add(config.userId);
+    }
+  }
+  return users.size > 1 ? [...users] : [];
+}

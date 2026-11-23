@@ -1,4 +1,4 @@
-import { HOOK_GAMEPAD_CONNECTED, gamepadApi } from "../definitions";
+import { HOOK_GAMEPAD_CONNECTED, HOOK_GAMEPAD_REGISTERED, gamepadApi } from "../definitions";
 
 /**
  * here are physical gamepads registered
@@ -48,6 +48,7 @@ export class BeaversGamepadManager implements BeaversGamepadManagerI {
       count: { buttons: gamepad.buttons.length, axes: gamepad.axes.length },
     };
     Hooks.callAll(HOOK_GAMEPAD_CONNECTED);
+    Hooks.callAll(HOOK_GAMEPAD_REGISTERED, String(gamepad.index));
   }
 
   private _gamepadTick() {

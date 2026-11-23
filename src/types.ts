@@ -187,6 +187,7 @@ interface GamepadSettingsI {
   setUserData: (userId: string, updateData: any) => Promise<any>;
   removeUserData: (userId: string) => Promise<any>;
   getGamepadConfigs: () => GamepadConfigs;
+  getStoredGamepadConfigs: () => GamepadConfigs;
   getGamepadConfig: (gamepadIndex: string) => GamepadConfig;
   getGamepadIndexForUser: (userId: string) => string | undefined;
   updateGamepadConfigs: (data: { [key: string]: any }) => Promise<any>;

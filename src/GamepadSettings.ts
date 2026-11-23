@@ -1,9 +1,17 @@
 import { GamepadConfigApp } from "./apps/GamepadConfigApp";
 import { UIConfigApp } from "./apps/UIConfigApp";
 import { KeyboardGamepad } from "./apps/KeyboardGamepad";
-import { DEFAULT_MODULE_IDS, MOVEMENT_SNAP, NAMESPACE, USER_UI, gamepadApi } from "./definitions";
+import {
+  ASK_USER_ON_RECONNECT,
+  DEFAULT_MODULE_IDS,
+  MOVEMENT_SNAP,
+  NAMESPACE,
+  USER_UI,
+  gamepadApi,
+} from "./definitions";
 import { SNAP_ALWAYS, SNAP_END, SNAP_NEVER } from "./core/movement";
 import { cloneModuleConfig, reconcileGamepadConfigs } from "./core/config";
+import { ASK_GAMEMASTER, ASK_OFF, ASK_SCREEN } from "./apps/GamepadClaim";
 
 export class GamepadSettings implements GamepadSettingsI {
   private GAMEPAD_CONFIG = "gamepad_config";
@@ -37,6 +45,20 @@ export class GamepadSettings implements GamepadSettingsI {
         [SNAP_ALWAYS]: "beaversGamepad.TokenMovement.snap.always",
         [SNAP_END]: "beaversGamepad.TokenMovement.snap.end",
         [SNAP_NEVER]: "beaversGamepad.TokenMovement.snap.never",
+      },
+    });
+
+    game.settings.register(NAMESPACE, ASK_USER_ON_RECONNECT, {
+      name: "beaversGamepad.settings.askUserOnReconnect.name",
+      hint: "beaversGamepad.settings.askUserOnReconnect.hint",
+      scope: "client",
+      config: true,
+      default: ASK_GAMEMASTER,
+      type: String,
+      choices: {
+        [ASK_GAMEMASTER]: "beaversGamepad.settings.askUserOnReconnect.gamemaster",
+        [ASK_SCREEN]: "beaversGamepad.settings.askUserOnReconnect.screen",
+        [ASK_OFF]: "beaversGamepad.settings.askUserOnReconnect.off",
       },
     });
 
@@ -171,6 +193,13 @@ export class GamepadSettings implements GamepadSettingsI {
       result[gamepadIndex] = configs[gamepadIndex];
     }
     return result;
+  }
+
+  /**
+   * the configurations of all gamepads that were ever seen, including those that are not connected right now.
+   */
+  getStoredGamepadConfigs(): GamepadConfigs {
+    return this._getReconciledConfigs();
   }
 
   private _getRegisteredGamepads(): RegisteredGamepads {
