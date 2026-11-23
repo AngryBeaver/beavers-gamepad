@@ -16,6 +16,8 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
     [gamepadIndex: string]: string;
   } = {};
   suspendedGamepads = new Set<string>();
+  // resumed gamepads that wait for all their buttons to be released.
+  releasingGamepads = new Set<string>();
 
   constructor() {
     Hooks.on(HOOK_GAMEPAD_CONNECTED, () => this.updateGamepadModuleInstance());
@@ -51,8 +53,14 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
     this.suspendedGamepads.add(String(gamepadIndex));
   }
 
+  /**
+   * The gamepad stays muted until all its buttons are released. Whoever suspended it reads the gamepad on its own,
+   * e.g. a question answered with (A). That press must not reach the modules once more, e.g. open the tiny-ui.
+   */
   resume(gamepadIndex: string) {
-    this.suspendedGamepads.delete(String(gamepadIndex));
+    if (this.suspendedGamepads.delete(String(gamepadIndex))) {
+      this.releasingGamepads.add(String(gamepadIndex));
+    }
   }
 
   /**
@@ -102,6 +110,10 @@ export class GamepadModuleManager implements GamepadModuleManagerI {
     const gamepadIndex = String(gamepadTickEvent.gamepad.index);
     if (this.suspendedGamepads.has(gamepadIndex)) {
       return;
+    }
+    if (this.releasingGamepads.has(gamepadIndex)) {
+      if (gamepadTickEvent.isAnyButtonPressed) return;
+      this.releasingGamepads.delete(gamepadIndex);
     }
     const gamepadModules = this.registeredGamepadModuleInstances[gamepadIndex];
     if (gamepadModules) {

@@ -1,4 +1,7 @@
 # 3.3.x reconnect
+## 3.3.1
+- fix: the button that answers "who plays this gamepad?" also reached the gamepad modules, e.g. (A) opened the tiny-ui below. A gamepad that was paused stays muted until all its buttons are released (also after detecting a binding in the gamepad configuration).
+
 ## 3.3.0
 - feature: a gamepad that wakes up while several gamepads of its model are off can not be told apart from them by the browser (no serial number, on Windows all Xbox-like XInput gamepads look the same). Somebody is asked who plays with it, meanwhile the gamepad is paused, and the answer swaps the seats (user and bindings). Client setting "Ask who plays a reconnected gamepad": ask the gamemaster (default: a window with a card per possible player, falls back to this screen when no gamemaster is online or the table screen is the gamemaster), ask on this screen (covers the table screen, played with that gamepad or by touch) or do not ask.
 
